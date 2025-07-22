@@ -7,4 +7,5 @@ SECTIONS
     . = 0x80000; 
     /*代码段起始地址*/
     .text : { *(.text.boot) *(.text*) } 
+    .rodata : { *(.rodata*)}
 }

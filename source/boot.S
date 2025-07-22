@@ -4,14 +4,21 @@
 //tells the Assembler where to put our code. 
 .section ".text.boot"  
 
-.global _sstart  // Execution starts here
-
+.global _sstart  //.global可以在整个工程中使用，如果仅有__start，在本文档中使用，__start$在本段中使用，默认为_start,修改为其他字符串，需要在linker中定义:ENTRY(sometext)
 _sstart:
-    //将act led灯打开
-    //外设基地址
-    ldr x4,=0xfe000000
-    //gpio基地址
-    orr x4,x4,#0x00200000
-    //设置act led，在pi4上是gpio42
-    ldr x5,=0x00000400
-    str x5,[x4,0x20] //GPSET1
+    mrs x0,mpidr_el1
+    // 根据手册The Cortex-A75 core is single-threaded, so this field has the value 0x00
+    //https://developer.arm.com/documentation/100403/0300/register-descriptions/aarch64-system-registers/mpidr-el1--multiprocessor-affinity-register--el1
+    and x0,x0,#3
+    cbz x0,stage2
+stage1:
+    wfe
+    b stage1
+
+stage2:
+    ldr x0,=_sstart
+    mov sp,x0
+    bl kernel_main
+    b stage1
+
+    

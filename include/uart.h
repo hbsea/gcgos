@@ -1,0 +1,47 @@
+#pragma onece
+
+#define PERIPHERAL_BASE 0xFE000000
+#define GPIO_BASE (0xFE000000 | 0x00200000)
+#define AUX_BASE (0xFE000000 | 0x00210000)
+
+struct gpioStruct
+{
+    int GPFSEL[7];
+    int GPSET[2];
+    int GPCLR[2];
+    int GPLEV[2];
+    int GPEDS[2];
+    int GPREN[2];
+    int GPFEN[2];
+    int GPHEN[2];
+    int GPLEN[2];
+    int GPAREN[2];
+    int GPAFEN[2];
+    int GPIO_PUP_PDN_CNTRL_REG[3];
+};
+
+struct AUX_MU_REG
+{
+    int AUX_IRQ;
+    int AUX_ENABLES;
+    int Reserve[14];
+    int AUX_MU_IO_REG;
+    int AUX_MU_IER_REG;
+    int AUX_MU_IIR_REG;
+    int AUX_MU_LCR_REG;
+    int AUX_MU_MCR_REG;
+    int AUX_MU_LSR_REG;
+    int AUX_MU_MSR_REG;
+    int AUX_MU_SCRATCH;
+    int AUX_MU_CNTL_REG;
+    int AUX_MU_STAT_REG;
+    int AUX_MU_BAUD_REG;
+};
+#define gpio ((struct gpioStruct *)GPIO_BASE)
+#define aux_mu_regs ((struct AUX_MU_REG *)AUX_BASE)
+
+
+void uart_init(void);
+void uart_send_char(char c);
+void uart_send_text(char *s);
+int uart_recev(void);
