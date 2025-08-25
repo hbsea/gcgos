@@ -1,5 +1,6 @@
+
 #include "uart.h"
-void uart_init()
+void mini_uart_init()
 {
     gpio->GPFSEL[1] &= ~0x3f000;
     gpio->GPFSEL[1] |= 0x12000; // set 14 and 15 to alt5 TDX1/RCX1
@@ -19,24 +20,24 @@ void uart_init()
     aux_mu_regs->AUX_MU_BAUD_REG = 541; //(clock/(buad*8)-1) clock=500000000
     aux_mu_regs->AUX_MU_CNTL_REG = 3;   // enable TDX/RCX
 };
-void uart_send_char(char c)
+void mini_uart_send_char(char c)
 {
     while (!(aux_mu_regs->AUX_MU_LSR_REG & 0x20))
         ;
     aux_mu_regs->AUX_MU_IO_REG = c;
 };
 
-void uart_send_text(char *s)
+void mini_uart_send_text(char *s)
 {
     while (*s)
     {
         if (*s == '\n')
-            uart_send_char('\r');
-        uart_send_char(*s++);
+            mini_uart_send_char('\r');
+        mini_uart_send_char(*s++);
     }
 };
 
-int uart_recev()
+int mini_uart_recev()
 {
 
     if (aux_mu_regs->AUX_MU_LSR_REG & 0x01)
@@ -49,3 +50,4 @@ int uart_recev()
         return -1;
     }
 };
+

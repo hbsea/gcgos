@@ -1,8 +1,10 @@
 #pragma onece
 
 #define PERIPHERAL_BASE 0xFE000000
-#define GPIO_BASE (0xFE000000 | 0x00200000)
-#define AUX_BASE (0xFE000000 | 0x00210000)
+#define GPIO_BASE (PERIPHERAL_BASE | 0x00200000)
+// hardware is (GPIO_BASE|0x00210000)
+#define AUX_BASE (GPIO_BASE | 0x15000)
+#define PL011_BASE (GPIO_BASE | 0x1000)
 
 struct gpioStruct
 {
@@ -37,11 +39,32 @@ struct AUX_MU_REG
     int AUX_MU_STAT_REG;
     int AUX_MU_BAUD_REG;
 };
+struct PL011_REG
+{
+    int DR;
+    int RSRECR[4]; // 注意只有4而不是5 之前写成5所以没有任何打印。
+    int FR;
+    int ILPR;
+    int IBRD;
+    int FBRD;
+    int LCRH;
+    int CR;
+    int IFLS;
+    int IMSC;
+    int RIS;
+    int MIS;
+    int ICR;
+    int DMACR;
+};
 #define gpio ((struct gpioStruct *)GPIO_BASE)
 #define aux_mu_regs ((struct AUX_MU_REG *)AUX_BASE)
+#define pl011_regs ((struct PL011_REG *)PL011_BASE)
 
-
-void uart_init(void);
-void uart_send_char(char c);
-void uart_send_text(char *s);
-int uart_recev(void);
+void mini_uart_init(void);
+void mini_uart_send_char(char c);
+void mini_uart_send_text(char *s);
+int mini_uart_recev(void);
+void pl011_uart_init(void);
+void pl011_uart_send_char(char c);
+void pl011_uart_send_text(char *s);
+int pl011_uart_recev(void);

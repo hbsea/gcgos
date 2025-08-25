@@ -6,6 +6,11 @@ SECTIONS
     /*aarch64起始地址，可以是0x80000,也可以是0x10000，linux使用的是后者。此处，点表示当前地址，后面必须跟空格，结尾必须分号*/
     . = 0x80000; 
     /*代码段起始地址*/
-    .text : { *(.text.boot) *(.text*) } 
+    .text : { 
+      *(.text.boot) *(.text*);
+      PROVIDE(etext = .); 
+    } 
     .rodata : { *(.rodata*)}
+
+    PROVIDE(end = .);
 }
