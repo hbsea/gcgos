@@ -1,5 +1,7 @@
 
 #include "uart.h"
+#include "memlayout.h"
+
 void mini_uart_init()
 {
     gpio->GPFSEL[1] &= ~0x3f000;
@@ -50,4 +52,3 @@ int mini_uart_recev()
         return -1;
     }
 };
-

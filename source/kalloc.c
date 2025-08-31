@@ -1,7 +1,10 @@
+#include "types.h"
 #include "memlayout.h"
 #include "arm.h"
-#include "types.h"
 #include "defs.h"
+
+#define NCPU 4
+__attribute__((aligned(16))) char stack0[4096 * NCPU];
 
 extern char end[]; // first address after kernel.  defined by kernel.ld.
 void freerange(void *pa_start, void *pa_end);
@@ -17,11 +20,9 @@ struct
 
 void kinit()
 {
-    printf("step in kinit");
     printf("k_end is at:%p\n", (void *)end);
     printf("PHYSTOP is at:%p\n", (void *)PHYSTOP);
     freerange(end, (void *)PHYSTOP);
-    printf("out of kinit\n");
 }
 
 void freerange(void *pa_start, void *pa_end)
@@ -54,6 +55,16 @@ void *kalloc(void)
     r = kmem.freelist;
     if (r)
         kmem.freelist = r->next;
-        
+
     return (void *)r;
+}
+void countkmem(void)
+{
+    struct run *r;
+    int i;
+    for (i = 0, r = kmem.freelist; r->next != '\0'; r = r->next)
+    {
+        i++;
+    }
+    printf("kmem.freelist lenght: %d\n", i);
 }

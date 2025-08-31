@@ -1,4 +1,6 @@
 #include "uart.h"
+#include "memlayout.h"
+
 void pl011_uart_init()
 {
     gpio->GPFSEL[1] &= ~0x3f000;

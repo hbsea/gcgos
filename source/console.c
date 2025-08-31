@@ -15,3 +15,8 @@ void consputc(int c)
         pl011_uart_send_char(c);
     }
 }
+
+void consoleinit(void)
+{
+    pl011_uart_init();
+}

@@ -62,6 +62,10 @@ int printf(char *fmt, ...)
         {
             printint(va_arg(ap, int), 10, 1);
         }
+        else if (c0 == 'b')
+        {
+            printint(va_arg(ap, uint64), 2, 1);            
+        }
         else if (c0 == 'l' && c1 == 'd')
         {
             printint(va_arg(ap, uint64), 10, 1);

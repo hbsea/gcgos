@@ -8,9 +8,13 @@ SECTIONS
     /*代码段起始地址*/
     .text : { 
       *(.text.boot) *(.text*);
+      . = ALIGN(0x1000); 
       PROVIDE(etext = .); 
     } 
     .rodata : { *(.rodata*)}
+    .data : { *(.data*)}
+    .bss : { *(.bss*)}
+
 
     PROVIDE(end = .);
 }

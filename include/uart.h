@@ -1,10 +1,4 @@
-#pragma onece
-
-#define PERIPHERAL_BASE 0xFE000000
-#define GPIO_BASE (PERIPHERAL_BASE | 0x00200000)
-// hardware is (GPIO_BASE|0x00210000)
-#define AUX_BASE (GPIO_BASE | 0x15000)
-#define PL011_BASE (GPIO_BASE | 0x1000)
+#pragma once
 
 struct gpioStruct
 {
@@ -56,6 +50,7 @@ struct PL011_REG
     int ICR;
     int DMACR;
 };
+
 #define gpio ((struct gpioStruct *)GPIO_BASE)
 #define aux_mu_regs ((struct AUX_MU_REG *)AUX_BASE)
 #define pl011_regs ((struct PL011_REG *)PL011_BASE)
