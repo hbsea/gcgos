@@ -29,13 +29,13 @@ void freerange(void *pa_start, void *pa_end)
 {
     char *p;
     p = (char *)PGROUNDUP((uint64)pa_start);
-    printf("first page addr:%p \n", p);
+    printf("first pa page addr:%p \n", p);
     int i;
     for (i = 0; p + PGSIZE <= (char *)pa_end; i++, p += PGSIZE)
     {
         kfree(p);
     }
-    printf("The total page is:%d; last page addr:%p \n", i, p);
+    printf("The total pa page is:%d; last page addr:%p \n", i, p);
 }
 
 void kfree(void *pa)

@@ -3,6 +3,7 @@
 #include "vm.h"
 
 char txt[] = "hello\n";
+
 void kernel_main()
 {
     // mini_uart_init();
@@ -10,7 +11,9 @@ void kernel_main()
     kinit();
     kvminit();
     kvminithart();
+    __asm__(".global _step_high\n_step_high:");
 
+    printf("high\n");
 
     while (1)
         ;
