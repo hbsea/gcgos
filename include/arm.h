@@ -1,43 +1,40 @@
 #pragma once
 #ifndef __ASSEMBLER__
 static inline void
-w_tbr0_el1(uint64 x)
+el1_el0(uint64 el0t, uint64 elr_el1, uint64 sp, uint64 ttbr0_el1)
 {
-    asm volatile("msr ttbr0_el1, %0" : : "r"(x));
-}
-static inline void
-w_ttbr1_el1(uint64 x)
-{
-    asm volatile("msr ttbr1_el1, %0" : : "r"(x));
-}
-static inline void
-w_tcr_el1(uint64 x)
-{
-    asm volatile("msr tcr_el1, %0" : : "r"(x));
-}
-static inline void
-w_sctlr_el1(uint64 x)
-{
-    asm volatile("msr sctlr_el1, %0" : : "r"(x));
-}
-static inline void
-r_sctlr_el1(uint64 x)
-{
-    asm volatile("mrs sctlr_el1, %0" : : "r"(x));
-}
-static inline void
-isb()
-{
-    asm volatile("isb");
+    asm volatile("msr spsr_el1, %0" ::"r"(el0t));
+    asm volatile("msr elr_el1, %0" ::"r"(elr_el1));
+    asm volatile("msr sp_el0, %0" ::"r"(sp));
+    asm volatile("msr ttbr0_el1, %0" ::"r"(ttbr0_el1));
+    asm volatile("eret");
 }
 
 static inline void
-flush_tlb()
+w_vbar_el1(uint64 x)
 {
-    asm volatile("dsb ishst");
-    asm volatile("tlbi vmalle1is");
-    asm volatile("dsb ish");
-    isb();
+    asm volatile("msr vbar_el1, %0" ::"r"(x));
+}
+static inline uint64
+r_vbar_el1(void)
+{
+    uint64 x;
+    asm volatile("mrs %0,vbar_el1" : "=r"(x));
+    return x;
+}
+static inline uint64
+r_esr_el1(void)
+{
+    uint64 x;
+    asm volatile("mrs %0,esr_el1" : "=r"(x));
+    return x;
+}
+static inline int
+r_CurrentEL(void)
+{
+    uint64 x;
+    asm volatile("mrs %0, CurrentEL" : "=r"(x));
+    return x;
 }
 
 typedef uint64 pte_t;
@@ -48,6 +45,7 @@ typedef uint64 *pagetable_t; // 512 PTE
 #define PGSHIFT 12  // bits of offset within a page
 
 #define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
+#define PGROUNDDOWN(sz) ((sz) & ~(PGSIZE - 1))
 
 // PTE[0]
 #define PTE_VALID (1 << 0)
@@ -68,8 +66,6 @@ typedef uint64 *pagetable_t; // 512 PTE
 #define PTE_INDX(i) (((i) & 7) << 2)
 #define PTE_DEVICE PTE_INDX(AI_DEVICE_nGnRnE_IDX)
 #define PTE_NORMAL PTE_INDX(AI_NORMAL_NC_IDX)
-
-
 
 // PTE[5:6] PTE_AP(Access Permission) is 2bit field.
 //         EL0   EL1
@@ -113,9 +109,9 @@ typedef uint64 *pagetable_t; // 512 PTE
 #define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
 
 // translation control register
-// VA_bits = 39 → TxSZ = 64 - 39 = 25 
+// VA_bits = 39 → TxSZ = 64 - 39 = 25
 #define TCR_T0SZ(n) ((n) & 0x3f)
 #define TCR_TG0(n) (((n) & 0x3) << 14)
 #define TCR_T1SZ(n) (((n) & 0x3f) << 16)
 #define TCR_TG1(n) (((n) & 0x3) << 30)
-#define TCR_IPS(n) (((uint64)(n) & 0x7) << 32)
+#define TCR_IPS(n) (((uint64)(n) & 0x7) << 32))

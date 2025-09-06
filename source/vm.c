@@ -10,9 +10,9 @@ pagetable_t kvmmake(void)
     kpgtbl = (pagetable_t)kalloc();
     printf("kpgtbl : %p \n", kpgtbl);
     printf("etext:%p\n", etext);
-    
+
     // uart registers
-    kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN);
+    kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW);
     // map kernel text executable and read-only.
     kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext - KERNBASE, PTE_NORMAL | PTE_AP_RO_EL1);
     // map kernel data and the physical RAM we'll make use of.
@@ -37,7 +37,7 @@ void kvminithart()
 {
     uint64 ttbr0 = (uint64)kernel_pagetable;
     uint64 ttbr1 = (uint64)0;
-    uint64 tcr = (TCR_T0SZ(25) | TCR_T1SZ(25) | TCR_TG0(0) | TCR_TG1(0) | TCR_IPS(0));
+    uint64 tcr = (TCR_T0SZ(25) | TCR_T1SZ(25) | TCR_TG0(0b00) | TCR_TG1(0b10) | TCR_IPS(0);
     uint mair = ((MT_DEVICE_nGnRnE << (8 * AI_DEVICE_nGnRnE_IDX)) | (MT_NORMAL_NC << (8 * AI_NORMAL_NC_IDX)));
     enable_mmu(ttbr0, ttbr1, tcr, mair);
     printf("enabled mmu\n");
@@ -45,7 +45,6 @@ void kvminithart()
 
 pte_t *walk(pagetable_t pagetable, uint64 va, int alloc)
 {
-
     if (va >= MAXVA)
         panic("walk");
 
@@ -60,7 +59,7 @@ pte_t *walk(pagetable_t pagetable, uint64 va, int alloc)
         {
             if (!alloc || (pagetable = (pte_t *)kalloc()) == 0)
                 return 0;
-            *pte = PA2PTE(pagetable) | PTE_V;
+            *pte = PA2PTE(pagetable) | PTE_VALID | PTE_TABLE;
         }
     }
     return &pagetable[PX(0, va)];
@@ -87,7 +86,7 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 pa, uint64 size, uint64 pe
             return -1;
         if (*pte & PTE_AF)
             panic("mappages:remap");
-        *pte = PA2PTE(pa) | perm | PTE_V | PTE_AF;
+        *pte = PA2PTE(pa) | perm | PTE_AF | PTE_V;
 
         if (a == last)
             break;
@@ -95,4 +94,12 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 pa, uint64 size, uint64 pe
         pa += PGSIZE;
     }
     return 0;
+}
+
+pagetable_t uvmcreat()
+{
+    pagetable_t pagetable;
+    if ((pagetable = kalloc()) == 0)
+        return 0;
+    return pagetable;
 }

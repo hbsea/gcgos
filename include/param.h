@@ -1,0 +1,1 @@
+#define NPROC 64    //maximum number of processes

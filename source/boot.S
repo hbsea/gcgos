@@ -18,7 +18,7 @@ _sstart:
     and x0,x0,#3
     cbz x0,master
 proc_hang:
-    wfe
+    wfi
     b proc_hang
 
 

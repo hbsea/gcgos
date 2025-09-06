@@ -15,6 +15,6 @@ SECTIONS
     .data : { *(.data*)}
     .bss : { *(.bss*)}
 
-
+  . = ALIGN(0x1000); 
     PROVIDE(end = .);
 }
