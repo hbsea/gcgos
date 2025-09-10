@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "types.h": "c",
-        "defs.h": "c"
+        "defs.h": "c",
+        "trap.h": "c",
+        "memlayout.h": "c"
     }
 }

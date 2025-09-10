@@ -27,8 +27,10 @@ pagetable_t uvmcreat(void);
 extern void enable_mmu(uint64 ttbr0_el1, uint64 ttbr1_el1, uint64 tcr_el1, uint64 mair_el1);
 
 // proc.c
+void proc_mapstacks(pagetable_t);
 void procinit(void);
 void userinit(void);
+void swtch();
 
 // user_proc.c
 void uproc1(void);
@@ -39,3 +41,5 @@ void kernelvec(void);
 //trap.c
 void trapinit(void);
 void trapinithart(void);
+void prepare_return(void);
+void show_invalid_entry_message(int,uint64,uint64) __attribute__((section("trap_msg")));

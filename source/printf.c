@@ -64,7 +64,7 @@ int printf(char *fmt, ...)
         }
         else if (c0 == 'b')
         {
-            printint(va_arg(ap, uint64), 2, 1);            
+            printint(va_arg(ap, uint64), 2, 1);
         }
         else if (c0 == 'l' && c1 == 'd')
         {
@@ -144,5 +144,5 @@ void panic(char *s)
     printf("panic: ");
     printf("%s\n", s);
     while (1)
-        ;
+        asm volatile("wfi");
 }

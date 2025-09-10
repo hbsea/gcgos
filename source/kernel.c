@@ -2,8 +2,8 @@
 #include "defs.h"
 #include "vm.h"
 #include "memlayout.h"
+#include "proc.h"
 
-extern char end[];
 void kernel_main()
 {
     // mini_uart_init();
@@ -17,6 +17,8 @@ void kernel_main()
     trapinit();
     trapinithart();
     userinit();
+
+    swtch(&proc[1]);
 
     while (1)
         asm volatile("wfi");

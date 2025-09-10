@@ -4,12 +4,15 @@
 
 pagetable_t kernel_pagetable;
 extern char etext[]; // kernel.ld sets this to end of kernel code.
+
+extern char trampoline[]; // trampoline.S
+
 pagetable_t kvmmake(void)
 {
     pagetable_t kpgtbl, tpgtbl;
     kpgtbl = (pagetable_t)kalloc();
     printf("kpgtbl : %p \n", kpgtbl);
-    printf("etext:%p\n", etext);
+    printf("ketext:%p\n", etext);
 
     // uart registers
     kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW);
@@ -17,6 +20,10 @@ pagetable_t kvmmake(void)
     kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext - KERNBASE, PTE_NORMAL | PTE_AP_RO_EL1);
     // map kernel data and the physical RAM we'll make use of.
     kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext, PTE_NORMAL | PTE_XN);
+    printf("trampoline:%p\n", trampoline);
+    kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_NORMAL | PTE_AP_RO_EL1);
+    printf("TRAMPOLINE:%p\n", TRAMPOLINE);
+    proc_mapstacks(kpgtbl);
     return kpgtbl;
 }
 
@@ -84,7 +91,7 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 pa, uint64 size, uint64 pe
     {
         if ((pte = walk(pagetable, a, 1)) == 0)
             return -1;
-        if (*pte & PTE_AF)
+        if (*pte & PTE_V)
             panic("mappages:remap");
         *pte = PA2PTE(pa) | perm | PTE_AF | PTE_V;
 

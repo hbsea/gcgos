@@ -7,14 +7,17 @@ SECTIONS
     . = 0x80000; 
     /*代码段起始地址*/
     .text : { 
-      *(.text.boot) *(.text*);
+      *(.text.boot) *(.text*);   
       . = ALIGN(0x1000); 
+      *(trampsec)
+      *(trap_msg)
+      . = ALIGN(0x1000);
       PROVIDE(etext = .); 
     } 
     .rodata : { *(.rodata*)}
     .data : { *(.data*)}
     .bss : { *(.bss*)}
 
-  . = ALIGN(0x1000); 
+    . = ALIGN(0x1000); 
     PROVIDE(end = .);
 }

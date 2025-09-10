@@ -1,0 +1,1 @@
+extern pagetable_t kernel_pagetable;

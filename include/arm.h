@@ -1,13 +1,24 @@
 #pragma once
 #ifndef __ASSEMBLER__
 static inline void
-el1_el0(uint64 el0t, uint64 elr_el1, uint64 sp, uint64 ttbr0_el1)
+w_spsr_el1(uint64 spsr_el1)
 {
-    asm volatile("msr spsr_el1, %0" ::"r"(el0t));
+    asm volatile("msr spsr_el1, %0" ::"r"(spsr_el1));
+}
+static inline void
+w_elr_el1(uint64 elr_el1)
+{
     asm volatile("msr elr_el1, %0" ::"r"(elr_el1));
-    asm volatile("msr sp_el0, %0" ::"r"(sp));
+}
+static inline void
+w_sp_el0(uint64 sp_el0)
+{
+    asm volatile("msr sp_el0, %0" ::"r"(sp_el0));
+}
+static inline void
+w_ttbr0_el1(uint64 ttbr0_el1)
+{
     asm volatile("msr ttbr0_el1, %0" ::"r"(ttbr0_el1));
-    asm volatile("eret");
 }
 
 static inline void
