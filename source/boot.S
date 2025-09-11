@@ -1,5 +1,4 @@
 #include "sysregs.h"
-
 //.开头的是汇编器的指示指令，本身不会做任何事情。
 
 // 用于在linker中控制最先运行的启动代码，否则将按文件的字母顺序执行。
@@ -8,7 +7,6 @@
 
 .global _sstart  //.global可以在整个工程中使用，如果仅有__start，在本文档中使用，__start$在本段中使用，默认为_start,修改为其他字符串，需要在linker中定义:ENTRY(sometext)
 _sstart:
-
     mrs x0, CurrentEL
     lsr x0, x0, #2
 

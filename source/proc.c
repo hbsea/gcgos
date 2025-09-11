@@ -50,6 +50,7 @@ pagetable_t proc_pagetable(struct proc *p)
     pagetable = uvmcreat();
     mappages(pagetable, TRAMPOLINE, (uint64)vectors, PGSIZE, PTE_NORMAL | PTE_AP_RO_EL1);
     p->tf = kalloc();
+    printf("TRAPFRAME:%p\n",TRAPFRAME);
     mappages(pagetable, TRAPFRAME, (uint64)p->tf, PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
     return pagetable;
 }
@@ -92,6 +93,7 @@ void forkret(void)
         mappages(initproc->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
         w_elr_el1(0x0);
 
+        initproc->tf->kernel_pagetable = r_ttbr0_el1();
         w_ttbr0_el1((uint64)(initproc->pagetable));
     }
     prepare_return();
@@ -104,8 +106,6 @@ void swtch(struct proc *op)
     {
         for (np = op + 1; np != op; np++)
         {
-            printf("np-:%p\n", np);
-
             if (np = &proc[NPROC])
                 np = &proc[0];
             if (np->state == RUNNABLE)
@@ -114,7 +114,7 @@ void swtch(struct proc *op)
         if (np->state == RUNNABLE)
             break;
     }
-    
+
     asm volatile("mov %0,x30" : "=r"(op->ctx.x30));
     asm volatile("mov %0,sp" : "=r"(op->ctx.sp));
 

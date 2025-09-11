@@ -23,6 +23,7 @@ struct context
 
 struct trapframe
 {
+    uint64 kernel_pagetable;
     uint64 spsr;
     uint64 elr;
     uint64 sp;

@@ -1,14 +1,18 @@
 #include "defs.h"
 #include "trap.h"
 #include "vm.h"
+#include "memlayout.h"
 // in kernelvec.S, calls kerneltrap().
 void vectors();
 //
 // set up trapframe and control registers for a return to user space
 // EL1->EL0.
 // before eret it's need set spsr_el1:el0h ttbr0_el1:pagetable_mmu sp_el0:user_stack_point elr_el1:user_text
+//from EL0 to EL1, the hardware automatically sets PSTATE.SP to 1.means use sp_el1 
 void prepare_return(void)
-{
+{	
+
+	w_vbar_el1(TRAMPOLINE);
 	w_spsr_el1(0b0000 | (1 << 6) | (1 << 7) | (1 << 8));
 	asm volatile("eret");
 }

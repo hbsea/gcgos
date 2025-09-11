@@ -1,4 +1,5 @@
 #include "trap.h"
+#include "memlayout.h"
 
 /* VBAR_ELx
                 Synchronous|IRQ       |FIQ       |SError    |
@@ -19,6 +20,10 @@ trampoline:
 
 	.macro handle_invalid_entry type
 	
+	ldr x0,=TRAPFRAME
+	ldr x1,[x0]
+	msr ttbr0_el1,x1
+
 	mov	x0, #\type
 	mrs	x1, esr_el1
 	mrs	x2, elr_el1

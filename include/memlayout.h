@@ -11,6 +11,18 @@
 #define AUX_BASE (GPIO_BASE | 0x15000)
 #define PL011_BASE (GPIO_BASE | 0x1000)
 
+
+#define PGSIZE 4096 // bytes per page
+#define PGSHIFT 12  // bits of offset within a page
+
+#define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
+#define PGROUNDDOWN(sz) ((sz) & ~(PGSIZE - 1))
+
+// one beyond the highest possible virtual address.
+// MAXVA is actually one bit less than the max allowed by
+// Sv39, to avoid having to sign-extend virtual addresses
+// that have the high bit set.
+#define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
 // Trampoline
 #define TRAMPOLINE MAXVA - PGSIZE
 

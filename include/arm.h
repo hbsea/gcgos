@@ -15,6 +15,13 @@ w_sp_el0(uint64 sp_el0)
 {
     asm volatile("msr sp_el0, %0" ::"r"(sp_el0));
 }
+static inline uint64
+r_ttbr0_el1()
+{
+    uint64 x;
+    asm volatile("mrs  %0,ttbr0_el1" : "=r"(x));
+    return x;
+}
 static inline void
 w_ttbr0_el1(uint64 ttbr0_el1)
 {

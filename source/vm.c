@@ -21,7 +21,7 @@ pagetable_t kvmmake(void)
     // map kernel data and the physical RAM we'll make use of.
     kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext, PTE_NORMAL | PTE_XN);
     printf("trampoline:%p\n", trampoline);
-    kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_NORMAL | PTE_AP_RO_EL1);
+    kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_NORMAL | PTE_AP_RO);
     printf("TRAMPOLINE:%p\n", TRAMPOLINE);
     proc_mapstacks(kpgtbl);
     return kpgtbl;
