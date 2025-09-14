@@ -24,7 +24,7 @@
 // that have the high bit set.
 #define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
 // Trampoline
-#define TRAMPOLINE MAXVA - PGSIZE
+#define TRAMPOLINE MAXVA - 2*PGSIZE
 
 // Trapframe
 #define TRAPFRAME TRAMPOLINE - PGSIZE

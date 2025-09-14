@@ -13,10 +13,16 @@ void kernelvec();
 // from EL0 to EL1, the hardware automatically sets PSTATE.SP to 1.means use sp_el1
 void prepare_return(void)
 {
+	curproc->tf->kernel_ttbr = r_ttbr0_el1();
+	curproc->tf->kernel_sp = curproc->kstack + PGSIZE;
+
+	// printf("TRAMPOLINE:%p\n",TRAMPOLINE);
 
 	w_vbar_el1(TRAMPOLINE);
 	w_spsr_el1(0b0000 | (1 << 6) | (1 << 7) | (1 << 8));
-	asm volatile("eret");
+	
+	w_ttbr0_el1((uint64)(curproc->pagetable));
+	// asm volatile("eret");
 }
 
 void trapinit(void) {}
@@ -34,9 +40,9 @@ void trapinithart(void)
 void kerneltrap(void)
 {
 
-	printf("user trap SPSR_EL1:%p \n", r_spsr_el1());
+	printf("kernel trap SPSR_EL1:%p \n", r_spsr_el1());
 	int kec = (((r_esr_el1()) >> 26) & 0x3f);
-	printf("ec: %b not handle\n", kec);
+	printf("kec: %b not handle\n", kec);
 	panic("GET KERNEL TRAP");
 
 	// printf("r_esr_el1: %b\n", ((r_esr_el1())>>26 & 0x3F));
@@ -60,11 +66,16 @@ void usertrap(void)
 	case 0b000000:
 		printf("ec: %b in user space cpu can't fetch instruction because the mmu not map. the arm doc says:Unknown reason. \n", ec);
 		break;
+	case 0b100100:
+		printf("ec: %b MMU data abort. \n", ec);
+		break;
 	default:
 		printf("ec: %b not in handle\n", ec);
 		break;
 	}
-	panic("GET USER TRAP");
+
+	prepare_return();
+	// panic("GET USER TRAP");
 }
 
 const char *entry_error_messages[] = {
@@ -91,5 +102,6 @@ const char *entry_error_messages[] = {
 void show_invalid_entry_message(int type, uint64 esr, uint64 address)
 {
 	printf("%s, ESR[EC]: %b, address: %x\r\n", entry_error_messages[type], ((esr >> 26) & 0x3f), address);
+	debug();
 	// panic("trap message");
 }

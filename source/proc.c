@@ -5,6 +5,8 @@
 #include "defs.h"
 #include "memlayout.h"
 
+extern char userret[];
+extern char trampoline[];
 extern char end[];
 extern void forkret(void);
 void uservec();
@@ -49,7 +51,8 @@ pagetable_t proc_pagetable(struct proc *p)
 {
     pagetable_t pagetable;
     pagetable = uvmcreat();
-    mappages(pagetable, TRAMPOLINE, (uint64)uservec, PGSIZE, PTE_NORMAL | PTE_AP_RO_EL1);
+    printf("user pagetable:%p\n", pagetable);
+    mappages(pagetable, TRAMPOLINE, (uint64)uservec, 2 * PGSIZE, PTE_NORMAL | PTE_AP_RO_EL1);
     p->tf = kalloc();
     mappages(pagetable, TRAPFRAME, (uint64)p->tf, PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
     return pagetable;
@@ -94,24 +97,42 @@ void forkret(void)
         mappages(initproc->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
 
         w_elr_el1(0x0);
-
-        initproc->tf->kernel_ttbr = r_ttbr0_el1();
-        initproc->tf->kernel_sp = initproc->kstack + PGSIZE;
-
-        w_ttbr0_el1((uint64)(initproc->pagetable));
     }
+    printf("forkret TRAPFRAME:%p\n", TRAPFRAME);
     prepare_return();
+
+    uint64 trampoline_userret = TRAMPOLINE + (userret - trampoline);
+
+    debug();
+
+    ((void (*)(uint64))trampoline_userret)((uint64)(TRAPFRAME));
+    // asm volatile("eret");
 }
 
 struct proc *newproc(void)
 {
     struct proc *np;
     np = allocproc();
-    curproc = np;
+    np->ppid = curproc->pid;
     np->ctx.sp = (uint64)(np->kstack + PGSIZE);
     np->ctx.x30 = (uint64)forkret;
 
-    printf("newproc created,pid is: %d\ addr:%p np->ctx.x30:%p p->ctx.sp:%p\n", np->pid, np, np->ctx.x30, np->ctx.sp);
+    printf("newproc created,pid is: %d\ ppid is: %d addr:%p np->ctx.x30:%p p->ctx.sp:%p\n", np->pid, np->ppid, np, np->ctx.x30, np->ctx.sp);
+}
+
+void sleep(void *chan)
+{
+    curproc->chan = chan;
+    curproc->state = WAITING;
+    printf("sleep curproc pid:%d state:%d\n", curproc->pid, curproc->state);
+    swtch();
+}
+void wakeup(void *chan)
+{
+    struct proc *p;
+    for (p = proc; p < &proc[NPROC]; p++)
+        if (p->state = WAITING && p->chan == chan)
+            p->state = RUNNABLE;
 }
 
 void swtch()
@@ -122,7 +143,10 @@ void swtch()
         for (np = curproc + 1; np != curproc; np++)
         {
             if (np == &proc[NPROC])
+            {
+                printf("enum all proc now start from &proc[0]\n");
                 np = &proc[0];
+            }
             if (np->state == RUNNABLE)
                 break;
         }

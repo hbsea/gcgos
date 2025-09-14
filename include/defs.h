@@ -32,6 +32,9 @@ void procinit(void);
 void userinit(void);
 struct proc *newproc(void);
 void swtch(void);
+void sleep(void *chan);
+void wakeup(void *chan);
+
 
 // user_proc.c
 void uproc1(void);

@@ -9,7 +9,9 @@ SECTIONS
     .text : { 
       *(.text.boot) *(.text*);   
       . = ALIGN(0x1000); 
-      *(trampsec)      
+      *(trampsec)
+      PROVIDE(userret_code = .); 
+      *(userretsec)
       . = ALIGN(0x1000);
       PROVIDE(user_code = .); 
       *(user_code)

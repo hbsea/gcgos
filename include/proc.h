@@ -61,14 +61,15 @@ struct trapframe
 struct proc
 {
     int pid;
+    int ppid;
     enum
     {
-        UNUSED,
-        USED,
+        UNUSED,     
         RUNNABLE,
-        WAITING
+        WAITING,
+        ZOMBIE
     } state;
-
+    void *chan;
     pagetable_t pagetable; // User page table
     uint64 sz;
     struct context ctx;

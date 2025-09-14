@@ -56,8 +56,13 @@ ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 	ldr x3,=show_invalid_entry_message
 	blr	x3
 
-    ldr x0,=usertrap
-    blr x0
+	ldr x0,=usertrap
+	blr x0
+  
+
+	//user return userret()
+
+	b userret
 
 	.endm
 
@@ -68,11 +73,11 @@ ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 	b	\label
 	.endm
 	
-.section trampsec
+.section trampsec, "ax", %progbits //userret  non-ABS relocatio
 .globl trampoline
 trampoline:
 
-.globl uservec
+.globl uservec 
 .align 11
 uservec:
     // call the C trap handler in trap.c
@@ -148,3 +153,26 @@ fiq_invalid_el0_32:
 error_invalid_el0_32:
 	handle_invalid_entry  ERROR_INVALID_EL0_32
 
+
+.section userretsec
+.globl userret
+userret:
+	ldr x0,=TRAPFRAME
+	ldr x1, [x0,0x10]
+	ldp x2, x3, [x0,0x20]
+	ldp x4, x5, [x0,0x30]
+	ldp x6, x7, [x0,0x40]
+	ldp x8, x9, [x0,0x50]
+	ldp x10, x11, [x0,0x60]
+	ldp x12, x13, [x0,0x70]
+	ldp x14, x15, [x0,0x80]
+	ldp x16, x17, [x0,0x90]
+	ldp x18, x19, [x0,0x100]
+	ldp x20, x21, [x0,0x110]
+	ldp x22, x23, [x0,0x120]
+	ldp x24, x25, [x0,0x130]
+	ldp x26, x27, [x0,0x140]
+	ldp x28, x29, [x0,0x150]
+	ldp x30, x31, [x0,0x160]
+
+	eret

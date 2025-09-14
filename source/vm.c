@@ -5,7 +5,9 @@
 pagetable_t kernel_pagetable;
 extern char etext[]; // kernel.ld sets this to end of kernel code.
 
-extern char trampoline[]; // trampoline.S
+extern char trampoline[];   // trampoline.S
+extern char user_code[];    // trampoline.S
+extern char userret_code[]; // trampoline.S
 
 pagetable_t kvmmake(void)
 {
@@ -15,6 +17,8 @@ pagetable_t kvmmake(void)
     printf("ketext:%p\n", etext);
     printf("TRAMPOLINE:%p\n", TRAMPOLINE);
     printf("TRAPFRAME:%p\n", TRAPFRAME);
+    printf("user_code:%p\n", user_code);
+    printf("userret_code:%p\n", userret_code);
 
     // uart registers
     kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW);
@@ -23,7 +27,7 @@ pagetable_t kvmmake(void)
     // map kernel data and the physical RAM we'll make use of.
     kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext, PTE_NORMAL | PTE_XN);
     printf("trampoline:%p\n", trampoline);
-    kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_NORMAL | PTE_AP_RO);
+    kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, 2 * PGSIZE, PTE_NORMAL | PTE_AP_RO);
     proc_mapstacks(kpgtbl);
     return kpgtbl;
 }
