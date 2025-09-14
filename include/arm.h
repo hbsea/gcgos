@@ -1,6 +1,19 @@
 #pragma once
 #ifndef __ASSEMBLER__
 static inline void
+debug(){
+    asm volatile("nop");
+}
+
+static inline uint64
+r_spsr_el1()
+{
+    uint64 x;
+    asm volatile("mrs  %0, spsr_el1" : "=r"(x));
+    return x;
+}
+
+static inline void
 w_spsr_el1(uint64 spsr_el1)
 {
     asm volatile("msr spsr_el1, %0" ::"r"(spsr_el1));
@@ -59,12 +72,6 @@ typedef uint64 pte_t;
 typedef uint64 *pagetable_t; // 512 PTE
 #endif                       // __ASSEMBLER__
 
-#define PGSIZE 4096 // bytes per page
-#define PGSHIFT 12  // bits of offset within a page
-
-#define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
-#define PGROUNDDOWN(sz) ((sz) & ~(PGSIZE - 1))
-
 // PTE[0]
 #define PTE_VALID (1 << 0)
 // PTE[1]
@@ -120,16 +127,10 @@ typedef uint64 *pagetable_t; // 512 PTE
 #define PXSHIFT(level) (PGSHIFT + (9 * (level)))
 #define PX(level, va) ((((uint64)(va)) >> PXSHIFT(level)) & PXMASK)
 
-// one beyond the highest possible virtual address.
-// MAXVA is actually one bit less than the max allowed by
-// Sv39, to avoid having to sign-extend virtual addresses
-// that have the high bit set.
-#define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
-
 // translation control register
 // VA_bits = 39 → TxSZ = 64 - 39 = 25
 #define TCR_T0SZ(n) ((n) & 0x3f)
 #define TCR_TG0(n) (((n) & 0x3) << 14)
 #define TCR_T1SZ(n) (((n) & 0x3f) << 16)
 #define TCR_TG1(n) (((n) & 0x3) << 30)
-#define TCR_IPS(n) (((uint64)(n) & 0x7) << 32))
+#define TCR_IPS(n) (((uint64)(n) & 0x7) << 32)

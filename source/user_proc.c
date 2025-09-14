@@ -1,7 +1,10 @@
 #include "defs.h"
-__attribute__((aligned(4096))) void uproc1(void)
+__attribute__((aligned(4096), section("user_code"))) void uproc1(void)
 {
 
-    for (int i = 0; i < 10; i++)
-        printf("uproc1:");
+    for (int i = 0; i < 2; i++)
+        ;
+    // printf("uproc1:");
+    asm volatile("mov x8,#0x1");
+    asm volatile("svc #0");
 }

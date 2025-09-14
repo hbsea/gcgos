@@ -12,23 +12,21 @@ ELx->ELy AArch64|0x400     |0x480     |0x500     |0x580     |
 -----+----------+----------+----------+----------+----------+
 ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 */
-.section trampsec
-.globl trampoline
-trampoline:
+
+
 
 
 
 	.macro handle_invalid_entry type
-	
-	ldr x0,=TRAPFRAME
-	ldr x1,[x0]
-	msr ttbr0_el1,x1
 
 	mov	x0, #\type
 	mrs	x1, esr_el1
 	mrs	x2, elr_el1
 	ldr x3,=show_invalid_entry_message
 	blr	x3
+
+	b kerneltrap
+
 	.endm
 
 
@@ -39,9 +37,9 @@ trampoline:
 	.endm
 	
 
-.globl vectors
+.globl kernelvec
 .align 11
-vectors:
+kernelvec:
     // call the C trap handler in trap.c
    	ventry	sync_invalid_el1t			// Synchronous EL1t
 	ventry	irq_invalid_el1t			// IRQ EL1t
@@ -114,6 +112,3 @@ fiq_invalid_el0_32:
 
 error_invalid_el0_32:
 	handle_invalid_entry  ERROR_INVALID_EL0_32
-
-
-//   b alltrap

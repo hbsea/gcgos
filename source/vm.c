@@ -13,6 +13,8 @@ pagetable_t kvmmake(void)
     kpgtbl = (pagetable_t)kalloc();
     printf("kpgtbl : %p \n", kpgtbl);
     printf("ketext:%p\n", etext);
+    printf("TRAMPOLINE:%p\n", TRAMPOLINE);
+    printf("TRAPFRAME:%p\n", TRAPFRAME);
 
     // uart registers
     kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW);
@@ -22,7 +24,6 @@ pagetable_t kvmmake(void)
     kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext, PTE_NORMAL | PTE_XN);
     printf("trampoline:%p\n", trampoline);
     kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_NORMAL | PTE_AP_RO);
-    printf("TRAMPOLINE:%p\n", TRAMPOLINE);
     proc_mapstacks(kpgtbl);
     return kpgtbl;
 }
@@ -42,9 +43,9 @@ void kvminit(void)
 // the kernel's page table, and enable paging.
 void kvminithart()
 {
-    uint64 ttbr0 = (uint64)kernel_pagetable;
-    uint64 ttbr1 = (uint64)0;
-    uint64 tcr = (TCR_T0SZ(25) | TCR_T1SZ(25) | TCR_TG0(0b00) | TCR_TG1(0b10) | TCR_IPS(0);
+    uint64 ttbr0 = (uint64)kernel_pagetable; // 0x0：0x7fffffffff
+    uint64 ttbr1 = (uint64)0;                // 0xffff_ff800_0000_0000:0xffff_ffff_ffff_ffff
+    uint64 tcr = (TCR_T0SZ(25) | TCR_T1SZ(25) | TCR_TG0(0b00) | TCR_TG1(0b10) | TCR_IPS(0));
     uint mair = ((MT_DEVICE_nGnRnE << (8 * AI_DEVICE_nGnRnE_IDX)) | (MT_NORMAL_NC << (8 * AI_NORMAL_NC_IDX)));
     enable_mmu(ttbr0, ttbr1, tcr, mair);
     printf("enabled mmu\n");

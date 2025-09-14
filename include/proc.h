@@ -23,13 +23,11 @@ struct context
 
 struct trapframe
 {
-    uint64 kernel_pagetable;
-    uint64 spsr;
-    uint64 elr;
-    uint64 sp;
-    uint64 x0;
-    uint64 x1;
-    uint64 x2;
+    uint64 kernel_ttbr; // 0x0
+    uint64 kernel_sp;   // 0x8
+    uint64 x0;          // 0x10
+    uint64 x1;          // 0x18
+    uint64 x2;          // 0x20
     uint64 x3;
     uint64 x4;
     uint64 x5;
@@ -80,3 +78,4 @@ struct proc
 };
 
 extern struct proc proc[];
+extern struct proc *curproc;

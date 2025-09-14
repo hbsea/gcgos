@@ -9,8 +9,10 @@ SECTIONS
     .text : { 
       *(.text.boot) *(.text*);   
       . = ALIGN(0x1000); 
-      *(trampsec)
-      *(trap_msg)
+      *(trampsec)      
+      . = ALIGN(0x1000);
+      PROVIDE(user_code = .); 
+      *(user_code)
       . = ALIGN(0x1000);
       PROVIDE(etext = .); 
     } 

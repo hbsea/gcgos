@@ -4,7 +4,7 @@
 #include "memlayout.h"
 #include "proc.h"
 
-void kernel_main()
+int kernel_main()
 {
     // mini_uart_init();
     consoleinit();
@@ -18,8 +18,7 @@ void kernel_main()
     trapinithart();
     userinit();
 
-    swtch(&proc[1]);
+    swtch();
 
-    while (1)
-        asm volatile("wfi");
+    return 0;
 }
