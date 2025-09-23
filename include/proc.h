@@ -7,9 +7,9 @@ struct context
 
     /* callee register */
     uint64 x18;
-    uint64 x19;
-    uint64 x20;
-    uint64 x21;
+    uint64 x19; //0x10
+    uint64 x20; //0x18
+    uint64 x21; //0x20
     uint64 x22;
     uint64 x23;
     uint64 x24;
@@ -23,13 +23,11 @@ struct context
 
 struct trapframe
 {
-    uint64 kernel_ttbr; // 0x0
-    uint64 kernel_sp;   // 0x8
-    uint64 x0;          // 0x10
-    uint64 x1;          // 0x18
-    uint64 x2;          // 0x20
-    uint64 x3;
-    uint64 x4;
+    uint64 x0; // 0x0
+    uint64 x1; // 0x8
+    uint64 x2; // 0x10
+    uint64 x3; // 0x18
+    uint64 x4; // 0x20
     uint64 x5;
     uint64 x6;
     uint64 x7;
@@ -55,7 +53,12 @@ struct trapframe
     uint64 x27;
     uint64 x28;
     uint64 x29;
-    uint64 x30;
+    uint64 x30;         // 0x150
+    uint64 x31;         // 0x158
+    uint64 kernel_ttbr; // 0x160
+    uint64 kernel_sp;   // 0x168
+    uint64 elr_el1;     // 0x170
+    uint64 sp_el0;      // 0x178
 };
 
 struct proc
@@ -64,7 +67,7 @@ struct proc
     int ppid;
     enum
     {
-        UNUSED,     
+        UNUSED,
         RUNNABLE,
         WAITING,
         ZOMBIE
@@ -80,3 +83,4 @@ struct proc
 
 extern struct proc proc[];
 extern struct proc *curproc;
+extern struct proc *initproc;

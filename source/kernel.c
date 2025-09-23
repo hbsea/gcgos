@@ -18,7 +18,8 @@ int kernel_main()
     trapinithart();
     userinit();
 
-    swtch();
+
+    sched();
 
     return 0;
 }

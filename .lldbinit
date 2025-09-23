@@ -1,0 +1,16 @@
+target create "./build/kernel8.elf"
+target stop-hook add -o "register read ttbr0_el1 sp_el0 sp_el1 elr_el1 x0 ttbr0_el1"
+gdb-remote 1234
+#b swtch
+#b w_ttbr0_el1 #first el1->el0
+b userinit
+c
+# b w_sp_el0
+# c
+# c
+# b 0x38
+# c
+# b prepare_return
+# c
+# b w_ttbr0_el1 #svc 0 trap in el1->el0
+# c

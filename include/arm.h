@@ -1,7 +1,9 @@
 #pragma once
 #ifndef __ASSEMBLER__
+
 static inline void
-debug(){
+debug()
+{
     asm volatile("nop");
 }
 
@@ -18,10 +20,25 @@ w_spsr_el1(uint64 spsr_el1)
 {
     asm volatile("msr spsr_el1, %0" ::"r"(spsr_el1));
 }
+static inline uint64
+r_elr_el1()
+{
+    uint64 x;
+    asm volatile("mrs  %0,elr_el1" : "=r"(x));
+    return x;
+}
 static inline void
 w_elr_el1(uint64 elr_el1)
 {
     asm volatile("msr elr_el1, %0" ::"r"(elr_el1));
+}
+
+static inline uint64
+r_sp_el0()
+{
+    uint64 x;
+    asm volatile("mrs  %0,sp_el0" : "=r"(x));
+    return x;
 }
 static inline void
 w_sp_el0(uint64 sp_el0)
@@ -66,6 +83,16 @@ r_CurrentEL(void)
     uint64 x;
     asm volatile("mrs %0, CurrentEL" : "=r"(x));
     return x;
+}
+
+// flush the TLB.
+static inline void
+flush_tlb()
+{
+    asm volatile("dsb ishst");
+    asm volatile("tlbi vmalle1is");
+    asm volatile("dsb ish");
+    asm volatile("dsb sy");
 }
 
 typedef uint64 pte_t;
@@ -119,8 +146,10 @@ typedef uint64 *pagetable_t; // 512 PTE
 #define PTE_W 1 << 2
 
 // shift a physical address to the right place for a PTE.
-#define PA2PTE(pa) ((uint64)pa & ~0xFFF)
-#define PTE2PA(pte) ((uint64)pte & ~0xFFF)
+// #define PA2PTE(pa) ((uint64)pa & ~0xFFF)
+// #define PTE2PA(pte) ((uint64)pte & ~0xFFF)
+#define PA2PTE(pa) (((uint64)(pa) >> 12) << 12)
+#define PTE2PA(pte) ((uint64)(pte) & 0x0000FFFFFFFFF000ULL)
 
 // extract the three 9-bit page table indices from a virtual address.
 #define PXMASK 0x1FF // 9 bits

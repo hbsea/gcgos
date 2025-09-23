@@ -15,13 +15,14 @@ pagetable_t kvmmake(void)
     kpgtbl = (pagetable_t)kalloc();
     printf("kpgtbl : %p \n", kpgtbl);
     printf("ketext:%p\n", etext);
+    printf("MAXVA:%p\n", MAXVA);
     printf("TRAMPOLINE:%p\n", TRAMPOLINE);
     printf("TRAPFRAME:%p\n", TRAPFRAME);
     printf("user_code:%p\n", user_code);
     printf("userret_code:%p\n", userret_code);
 
     // uart registers
-    kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW);
+    kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW_EL1);
     // map kernel text executable and read-only.
     kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext - KERNBASE, PTE_NORMAL | PTE_AP_RO_EL1);
     // map kernel data and the physical RAM we'll make use of.
@@ -111,7 +112,7 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 pa, uint64 size, uint64 pe
 pagetable_t uvmcreat()
 {
     pagetable_t pagetable;
-    if ((pagetable = kalloc()) == 0)
+    if ((pagetable = (pagetable_t)kalloc()) == 0)
         return 0;
     return pagetable;
 }

@@ -9,7 +9,7 @@ extern char userret[];
 extern char trampoline[];
 extern char end[];
 extern void forkret(void);
-void uservec();
+
 struct proc proc[NPROC];
 int nextpid = 1;
 struct proc *initproc;
@@ -22,7 +22,7 @@ void proc_mapstacks(pagetable_t kpgtbl)
     {
         char *pa = kalloc();
         uint64 va = KSTACK((int)(p - proc));
-        // printf("va:%p\n", va);
+        printf("p:%p KSTACK va:%p\n", p, va);
 
         kvmmap(kpgtbl, va, (uint64)pa, PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
         // printf("p-proc:%d\n", p - proc);
@@ -51,10 +51,11 @@ pagetable_t proc_pagetable(struct proc *p)
 {
     pagetable_t pagetable;
     pagetable = uvmcreat();
-    printf("user pagetable:%p\n", pagetable);
-    mappages(pagetable, TRAMPOLINE, (uint64)uservec, 2 * PGSIZE, PTE_NORMAL | PTE_AP_RO_EL1);
-    p->tf = kalloc();
+    mappages(pagetable, TRAMPOLINE, (uint64)trampoline, 2 * PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
+    p->tf = (struct trapframe *)kalloc();
     mappages(pagetable, TRAPFRAME, (uint64)p->tf, PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
+
+    printf("new user pagetable:%p p->tf:%p \n", pagetable, p->tf);
     return pagetable;
 }
 
@@ -63,6 +64,7 @@ struct proc *allocproc(void)
     struct proc *p;
     for (p = proc; p < &proc[NPROC]; p++)
     {
+        printf("p:%p\n", p);
         if (p->state == UNUSED)
         {
             p->pid = allocpid();
@@ -72,12 +74,14 @@ struct proc *allocproc(void)
         }
     }
 }
+
 void userinit(void)
 {
     struct proc *p;
     p = allocproc();
     curproc = initproc = p;
-    printf("initproc TF:%p\n", &(curproc->tf));
+    printf("initproc TF:%p\n", curproc->tf);
+    debug();
     p->ctx.sp = (uint64)(p->kstack + PGSIZE);
     p->ctx.x30 = (uint64)forkret;
 }
@@ -89,23 +93,19 @@ void forkret(void)
     {
         first = 0;
 
-        w_sp_el0(PGSIZE);
-
         // fake init user text map,replace it when file ready.
         uint64 utext = (uint64)(&uproc1);
         printf("utext:%p uproc:%p\n", utext, &uproc1);
-        mappages(initproc->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
 
-        w_elr_el1(0x0);
+        mappages(curproc->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
+        curproc->tf->sp_el0 = PGSIZE;
     }
-    printf("forkret TRAPFRAME:%p\n", TRAPFRAME);
+
     prepare_return();
 
     uint64 trampoline_userret = TRAMPOLINE + (userret - trampoline);
+    ((void (*)(uint64))trampoline_userret)((uint64)(curproc->pagetable));
 
-    debug();
-
-    ((void (*)(uint64))trampoline_userret)((uint64)(TRAPFRAME));
     // asm volatile("eret");
 }
 
@@ -114,28 +114,37 @@ struct proc *newproc(void)
     struct proc *np;
     np = allocproc();
     np->ppid = curproc->pid;
-    np->ctx.sp = (uint64)(np->kstack + PGSIZE);
+    np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
     np->ctx.x30 = (uint64)forkret;
 
+    uint64 utext = (uint64)(&uproc1);
+    printf("utext:%p uproc:%p tf:%p\n", utext, &uproc1, np->tf);
+
+    mappages(np->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
+
+    np->tf->sp_el0 = PGSIZE;
+    np->ctx.sp = (uint64)(np->kstack + PGSIZE);
+
     printf("newproc created,pid is: %d\ ppid is: %d addr:%p np->ctx.x30:%p p->ctx.sp:%p\n", np->pid, np->ppid, np, np->ctx.x30, np->ctx.sp);
+    return np;
 }
 
 void sleep(void *chan)
 {
     curproc->chan = chan;
     curproc->state = WAITING;
-    printf("sleep curproc pid:%d state:%d\n", curproc->pid, curproc->state);
-    swtch();
+    printf("sleeping curproc pid:%d state:%d\n", curproc->pid, curproc->state);
+    sched();
 }
 void wakeup(void *chan)
 {
     struct proc *p;
     for (p = proc; p < &proc[NPROC]; p++)
-        if (p->state = WAITING && p->chan == chan)
+        if (p->state == WAITING && p->chan == chan)
             p->state = RUNNABLE;
 }
 
-void swtch()
+void sched()
 {
     struct proc *np;
     while (1)
@@ -144,7 +153,7 @@ void swtch()
         {
             if (np == &proc[NPROC])
             {
-                printf("enum all proc now start from &proc[0]\n");
+                printf("NO PROC IS RUNNING\n");
                 np = &proc[0];
             }
             if (np->state == RUNNABLE)
@@ -154,14 +163,25 @@ void swtch()
             break;
     }
 
+    // asm volatile("mov x30,%0" ::"r"(curproc->ctx.x30));
+    // asm volatile("mov sp,%0" ::"r"(curproc->ctx.sp));
+    // asm volatile("ret");
+
+    // printf("oldproc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+    // swtch(&curproc->ctx, &np->ctx);
+
+    // printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+
+    printf("old curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", curproc->ctx.x30, curproc->tf->sp_el0);
+
     // asm volatile("mov %0,x30" : "=r"(curproc->ctx.x30));
     // asm volatile("mov %0,sp" : "=r"(curproc->ctx.sp));
-
     curproc = np;
-    printf("curproc PID:%d\n", curproc->pid);
-    printf("new proc pid: %d p->ctx.x30:%p p->ctx.sp:%p\n", np->pid, np->ctx.x30, np->ctx.sp);
+    // printf("save new curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", curproc->ctx.x30, curproc->ctx.sp);
+    printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+
     debug();
-    asm volatile("mov x30,%0" ::"r"(np->ctx.x30));
-    asm volatile("mov sp,%0" ::"r"(np->ctx.sp));
+    asm volatile("mov x30,%0" ::"r"(curproc->ctx.x30));
+    asm volatile("mov sp,%0" ::"r"(curproc->ctx.sp));
     asm volatile("ret");
 }

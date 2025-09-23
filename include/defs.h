@@ -31,21 +31,26 @@ void proc_mapstacks(pagetable_t);
 void procinit(void);
 void userinit(void);
 struct proc *newproc(void);
-void swtch(void);
+void sched(void);
 void sleep(void *chan);
 void wakeup(void *chan);
-
-
-// user_proc.c
-void uproc1(void);
 
 // trap.c
 void trapinit(void);
 void trapinithart(void);
 void kerneltrap(void);
-void usertrap(void);
+uint64 usertrap(void);
 void prepare_return(void);
-void show_invalid_entry_message(int, uint64, uint64);
+void show_invalid_entry_message(uint64, int, uint64, uint64, uint64);
 
 // syscall.c
 void syscall(void);
+
+// exec.c
+void exec(struct proc *p);
+
+// user_proc.c
+void uproc1();
+
+// swtch.S
+void swtch(struct context *, struct context *);

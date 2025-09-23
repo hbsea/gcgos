@@ -1,12 +1,14 @@
+#include "xv6_syscall.h"
 #include "proc.h"
 #include "defs.h"
-#include "syscall.h"
 #include "param.h"
 
 void sys_fork(void)
 {
-    newproc();
+    struct proc *p;
+    p = newproc();
     debug();
+    exec(p);
 }
 
 void sys_exit(void)
@@ -25,7 +27,7 @@ void sys_exit(void)
         if (p->ppid == curproc->pid)
             p->pid = 1;
 
-    swtch();
+    sched();
 }
 
 void sys_wait(void)
@@ -33,6 +35,7 @@ void sys_wait(void)
     struct proc *p;
     int any = 0;
     printf("wait pid :%d ppid:%d \n", curproc->pid, curproc->ppid);
+    debug();
     while (1)
     {
         for (p = proc; p < &proc[NPROC]; p++)
@@ -42,7 +45,7 @@ void sys_wait(void)
                 kfree(p->tf);
                 kfree(p->pagetable);
                 p->state = UNUSED;
-                prinf("%x collected %x \n", curproc, p);
+                printf("%x collected %x \n", curproc, p);
                 return;
             }
         }
@@ -59,8 +62,8 @@ void sys_wait(void)
 
 void syscall(void)
 {
-    printf("syscall NUM:%p\n", curproc->tf->x8);
     int call_num = curproc->tf->x8;
+    printf("curproc->pid:%d call_num:%d\n", curproc->pid, curproc->tf->x8);
     switch (call_num)
     {
     case SYS_fork:
