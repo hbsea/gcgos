@@ -42,6 +42,7 @@ master:
 
 
 el1_entry:
+    mrs x0, CurrentEL
 
     //At EL1, FP/SIMD is disabled by default.
     // Read current CPACR_EL1

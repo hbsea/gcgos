@@ -53,14 +53,17 @@ ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 	str x1, [x0]
 
 	ldp x1,x2,[x0,#0x100] //kerenl_pagetable kernel_stack
+
+	dsb ishst
+	tlbi vmalle1is
+	dsb ish
 	msr ttbr0_el1,x1	//正试切换至kernel的kpgtble。进程初始化时需要设置proc->ctx->kernel_pagetable.
-	mov sp,x2
-	
 	dsb ishst
 	tlbi vmalle1is
 	dsb ish
 	isb
 
+	mov sp,x2
 
 
 	// x0=TRAPFRAME
@@ -172,6 +175,9 @@ error_invalid_el0_32:
 .section userretsec
 .globl userret
 userret:
+	dsb ishst
+	tlbi vmalle1is
+	dsb ish
 	msr ttbr0_el1, x0  //切换到user的pagetable
 	dsb ishst
 	tlbi vmalle1is

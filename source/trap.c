@@ -3,6 +3,7 @@
 #include "vm.h"
 #include "memlayout.h"
 #include "proc.h"
+#include "sysregs.h"
 
 // in kernelvec.S, calls kerneltrap().
 void kernelvec();
@@ -24,10 +25,9 @@ void prepare_return(void)
 
 	w_vbar_el1(trampoline_uservec);
 
-	w_spsr_el1(0b0000 | (1 << 6) | (1 << 7) | (1 << 8));
+	w_spsr_el1(SPSR_MASK_ALL | SPSR_EL0);
 	w_sp_el0(curproc->tf->sp_el0);
 	w_elr_el1(curproc->tf->elr_el1);
-
 }
 
 void trapinit(void) {}

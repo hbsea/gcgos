@@ -73,6 +73,7 @@ struct proc *allocproc(void)
             return p;
         }
     }
+    return 0;
 }
 
 void userinit(void)
@@ -146,7 +147,8 @@ void wakeup(void *chan)
 
 void sched()
 {
-    struct proc *np;
+    struct proc *np, *cp;
+    cp = curproc;
     while (1)
     {
         for (np = curproc + 1; np != curproc; np++)
@@ -163,25 +165,28 @@ void sched()
             break;
     }
 
-    // asm volatile("mov x30,%0" ::"r"(curproc->ctx.x30));
-    // asm volatile("mov sp,%0" ::"r"(curproc->ctx.sp));
-    // asm volatile("ret");
+    if (cp == np)
+    {
+        asm volatile("mov x30,%0" ::"r"(cp->ctx.x30));
+        asm volatile("mov sp,%0" ::"r"(cp->ctx.sp));
+        asm volatile("ret");
+    }
 
+    printf("old curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->ctx.x30, cp->tf->sp_el0);
     // printf("oldproc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
-    // swtch(&curproc->ctx, &np->ctx);
+    curproc = np;
+    printf("c:%p np:%p\n", cp, np);
+    printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+    swtch(&cp->ctx, &np->ctx);
 
     // printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
 
-    printf("old curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", curproc->ctx.x30, curproc->tf->sp_el0);
-
     // asm volatile("mov %0,x30" : "=r"(curproc->ctx.x30));
     // asm volatile("mov %0,sp" : "=r"(curproc->ctx.sp));
-    curproc = np;
     // printf("save new curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", curproc->ctx.x30, curproc->ctx.sp);
-    printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
 
-    debug();
-    asm volatile("mov x30,%0" ::"r"(curproc->ctx.x30));
-    asm volatile("mov sp,%0" ::"r"(curproc->ctx.sp));
-    asm volatile("ret");
+    // debug();
+    // asm volatile("mov x30,%0" ::"r"(curproc->ctx.x30));
+    // asm volatile("mov sp,%0" ::"r"(curproc->ctx.sp));
+    // asm volatile("ret");
 }

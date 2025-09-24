@@ -14,13 +14,13 @@
 // ***************************************
 // HCR_EL2, Hypervisor Configuration Register (EL2), Page 2487 of AArch64-Reference-Manual.
 // ***************************************
-
+//D13.2.47
 #define HCR_RW (1 << 31)
 #define HCR_VALUE HCR_RW
 // ***************************************
 // SCR_EL3, Secure Configuration Register (EL3), Page 2648 of AArch64-Reference-Manual.
 // ***************************************
-
+//D13.2.112
 #define SCR_RESERVED (3 << 4)
 #define SCR_RW (1 << 10)
 #define SCR_NS (1 << 0)
@@ -29,7 +29,9 @@
 // ***************************************
 // SPSR_EL3, Saved Program Status Register (EL3) Page 389 of AArch64-Reference-Manual.
 // ***************************************
-
+// C5.2.19
 #define SPSR_MASK_ALL (7 << 6)
-#define SPSR_EL1h (5 << 0)
+#define SPSR_EL0 (0b0000 << 0)
+#define SPSR_EL1t (0b0100 << 0)
+#define SPSR_EL1h (0b0101 << 0)
 #define SPSR_VALUE (SPSR_MASK_ALL | SPSR_EL1h)
