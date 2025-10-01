@@ -16,16 +16,16 @@ extern char trampoline[], uservec[];
 // from EL0 to EL1, the hardware automatically sets PSTATE.SP to 1.means use sp_el1
 void prepare_return(void)
 {
-	printf("curprocPID:%d curprocTF:%p sp_el0=%p elr_el1=%p pagetable=%p\n", curproc->pid, curproc->tf, curproc->tf->sp_el0, curproc->tf->elr_el1, curproc->pagetable);
+	// printf("curprocPID:%d curprocTF:%p sp_el0=%p elr_el1=%p pagetable=%p\n", curproc->pid, curproc->tf, curproc->tf->sp_el0, curproc->tf->elr_el1, curproc->pagetable);
 
 	curproc->tf->kernel_ttbr = r_ttbr0_el1();
 	curproc->tf->kernel_sp = curproc->kstack + PGSIZE;
-	printf("curproc->tf->kernel_sp:%p\n", (void *)curproc->tf->kernel_sp);
+	// printf("curproc->tf->kernel_sp:%p\n", (void *)curproc->tf->kernel_sp);
 	uint64 trampoline_uservec = TRAMPOLINE + (uservec - trampoline);
 
 	w_vbar_el1(trampoline_uservec);
 
-	w_spsr_el1(SPSR_MASK_ALL | SPSR_EL0);
+	w_spsr_el1((0b101<<6) | SPSR_EL0);
 	w_sp_el0(curproc->tf->sp_el0);
 	w_elr_el1(curproc->tf->elr_el1);
 }
@@ -110,7 +110,7 @@ const char *entry_error_messages[] = {
 
 void show_invalid_entry_message(uint64 TF, int type, uint64 esr, uint64 address, uint64 syscall_num)
 {
-	printf("curprocAddr:%p TRAPFRAMEAdress:%p type:%s  ESR[EC]: %b  address: %x, trap_x8:%d C-TF:%p curproc->tf->x8:%p initproc:tf->x8:%p\n", curproc, TF, entry_error_messages[type], ((esr >> 26) & 0x3f), address, syscall_num, curproc->tf, curproc->tf->x8, initproc->tf->x8);
+	printf("curprocPid:%d TRAPFRAMEAdress:%p type:%s  ESR[EC]: %b  address: %x, syscall_num:%d C-TF:%p curproc->tf->x8:%p initproc:tf->x8:%p\n", curproc->pid, TF, entry_error_messages[type], ((esr >> 26) & 0x3f), address, syscall_num, curproc->tf, curproc->tf->x8, initproc->tf->x8);
 	debug();
 	// panic("trap message");
 }

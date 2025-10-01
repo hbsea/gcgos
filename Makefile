@@ -1,8 +1,8 @@
 
 all: clean kernel8.img
-	qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s && make clean
-# 	qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s && make clean &
-# 	lldb -s .lldbinit
+	#qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s && make clean
+	qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s 
+	#lldb -s .lldbinit
 
 
 kernel8.img: 

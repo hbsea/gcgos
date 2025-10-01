@@ -45,12 +45,14 @@ void show_invalid_entry_message(uint64, int, uint64, uint64, uint64);
 
 // syscall.c
 void syscall(void);
+void sys_fork(void);
 
 // exec.c
 void exec(struct proc *p);
 
 // user_proc.c
 void uproc1();
+void uproc2();
 
 // swtch.S
 void swtch(struct context *, struct context *);

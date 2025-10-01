@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "memlayout.h"
+#include "defs.h"
 
 void pl011_uart_init()
 {
@@ -33,16 +34,30 @@ void pl011_uart_send_text(char *s)
     }
 };
 
-int pl011_uart_recev()
-{
+int pl011_uart_get_char(){
 
-    if (pl011_regs->FR & (1 << 4))
-    {
+    if(pl011_regs->FR &(1<<4)){
+        return -1;
+    }else{
         int r = pl011_regs->DR;
         return r == '\r' ? '\n' : r;
     }
-    else
-    {
-        return -1;
+}
+
+int pl011_uart_recev()
+{
+    while (1){
+        int c= pl011_uart_get_char();
+	if(c==-1){
+	    break;
+	}
+        consputc(c);
     }
 };
+
+
+void pl011_uart_ie(void)
+{
+    printf("IFLS : %b RIS :%b \n",pl011_regs->IFLS,pl011_regs->RIS,&pl011_regs->TDR);
+    pl011_regs->IMSC |= (0b1 << 4);
+}

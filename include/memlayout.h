@@ -10,7 +10,9 @@
 // hardware is (GPIO_BASE|0x00210000)
 #define AUX_BASE (GPIO_BASE | 0x15000)
 #define PL011_BASE (GPIO_BASE | 0x1000)
-
+#define GIC_BASE 0xFF840000
+#define GICD_BASE (GIC_BASE + 0x1000)
+#define GICC_BASE (GIC_BASE + 0x2000)
 
 #define PGSIZE 4096 // bytes per page
 #define PGSHIFT 12  // bits of offset within a page
@@ -24,9 +26,9 @@
 // that have the high bit set.
 #define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
 // Trampoline
-#define TRAMPOLINE MAXVA - 2*PGSIZE
+#define TRAMPOLINE MAXVA - 2 * PGSIZE
 
 // Trapframe
 #define TRAPFRAME TRAMPOLINE - PGSIZE
 
-#define KSTACK(p) TRAMPOLINE-(((p) + 1) * 2 * PGSIZE)
+#define KSTACK(p) TRAMPOLINE - (((p) + 1) * 2 * PGSIZE)

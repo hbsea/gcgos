@@ -13,8 +13,11 @@ SECTIONS
       PROVIDE(userret_code = .); 
       *(userretsec)
       . = ALIGN(0x1000);
-      PROVIDE(user_code = .); 
-      *(user_code)
+      PROVIDE(user1_code = .); 
+      *(user1_code)
+      . = ALIGN(0x1000);
+      PROVIDE(user2_code = .); 
+      *(user2_code)
       . = ALIGN(0x1000);
       PROVIDE(etext = .); 
     } 

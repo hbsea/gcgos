@@ -4,6 +4,7 @@
 #include "arm.h"
 #include "defs.h"
 #include "memlayout.h"
+#include "gicv2.h"
 
 extern char userret[];
 extern char trampoline[];
@@ -96,7 +97,7 @@ void forkret(void)
 
         // fake init user text map,replace it when file ready.
         uint64 utext = (uint64)(&uproc1);
-        printf("utext:%p uproc:%p\n", utext, &uproc1);
+        // printf("utext:%p uproc:%p\n", utext, &uproc1);
 
         mappages(curproc->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
         curproc->tf->sp_el0 = PGSIZE;
@@ -118,8 +119,8 @@ struct proc *newproc(void)
     np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
     np->ctx.x30 = (uint64)forkret;
 
-    uint64 utext = (uint64)(&uproc1);
-    printf("utext:%p uproc:%p tf:%p\n", utext, &uproc1, np->tf);
+    uint64 utext = (uint64)(&uproc2);
+    printf("utext:%p uproc:%p tf:%p\n", utext, &uproc2, np->tf);
 
     mappages(np->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
 
@@ -148,6 +149,8 @@ void wakeup(void *chan)
 void sched()
 {
     struct proc *np, *cp;
+    static int first = 1;
+
     cp = curproc;
     while (1)
     {
@@ -165,28 +168,23 @@ void sched()
             break;
     }
 
-    if (cp == np)
+    //write_gicd_sgir();
+
+    // if (cp == np)
+    if (first)
     {
+
+        first = 0;
+        printf("cp pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid, cp->ctx.x30, cp->tf->sp_el0);
+
         asm volatile("mov x30,%0" ::"r"(cp->ctx.x30));
         asm volatile("mov sp,%0" ::"r"(cp->ctx.sp));
         asm volatile("ret");
     }
 
-    printf("old curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->ctx.x30, cp->tf->sp_el0);
-    // printf("oldproc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+    printf("old pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid, cp->ctx.x30, cp->tf->sp_el0);
     curproc = np;
     printf("c:%p np:%p\n", cp, np);
-    printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+    printf("swtch : curproc pid:%d pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pid, curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
     swtch(&cp->ctx, &np->ctx);
-
-    // printf("swtch : curproc pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
-
-    // asm volatile("mov %0,x30" : "=r"(curproc->ctx.x30));
-    // asm volatile("mov %0,sp" : "=r"(curproc->ctx.sp));
-    // printf("save new curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", curproc->ctx.x30, curproc->ctx.sp);
-
-    // debug();
-    // asm volatile("mov x30,%0" ::"r"(curproc->ctx.x30));
-    // asm volatile("mov sp,%0" ::"r"(curproc->ctx.sp));
-    // asm volatile("ret");
 }

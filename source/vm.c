@@ -5,8 +5,10 @@
 pagetable_t kernel_pagetable;
 extern char etext[]; // kernel.ld sets this to end of kernel code.
 
-extern char trampoline[];   // trampoline.S
-extern char user_code[];    // trampoline.S
+extern char trampoline[]; // trampoline.S
+extern char user1_code[];
+extern char user2_code[];
+
 extern char userret_code[]; // trampoline.S
 
 pagetable_t kvmmake(void)
@@ -18,8 +20,14 @@ pagetable_t kvmmake(void)
     printf("MAXVA:%p\n", MAXVA);
     printf("TRAMPOLINE:%p\n", TRAMPOLINE);
     printf("TRAPFRAME:%p\n", TRAPFRAME);
-    printf("user_code:%p\n", user_code);
+    printf("user1_code:%p\n", user1_code);
+    printf("user2_code:%p\n", user2_code);
+
     printf("userret_code:%p\n", userret_code);
+    printf("GICD_BASE:%p\n", GICD_BASE);
+
+    // gic
+    kvmmap(kpgtbl, GICD_BASE, GICD_BASE, 4 * PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW_EL1);
 
     // uart registers
     kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW_EL1);

@@ -36,8 +36,9 @@ struct AUX_MU_REG
 struct PL011_REG
 {
     int DR;
-    int RSRECR[4]; // 注意只有4而不是5 之前写成5所以没有任何打印。
+    int RSRECR[5]; 
     int FR;
+    int Reserv1;
     int ILPR;
     int IBRD;
     int FBRD;
@@ -49,6 +50,11 @@ struct PL011_REG
     int MIS;
     int ICR;
     int DMACR;
+    int Rserve2[15];
+    int ITCR;
+    int ITIP;
+    int ITOP;
+    int TDR;
 };
 
 #define gpio ((struct gpioStruct *)GPIO_BASE)
@@ -63,3 +69,4 @@ void pl011_uart_init(void);
 void pl011_uart_send_char(char c);
 void pl011_uart_send_text(char *s);
 int pl011_uart_recev(void);
+void pl011_uart_ie(void);

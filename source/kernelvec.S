@@ -19,9 +19,10 @@ ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 
 	.macro handle_invalid_entry type
 
-	mov	x0, #\type
-	mrs	x1, esr_el1
-	mrs	x2, elr_el1
+	mov	x1, #\type
+	mrs	x2, esr_el1
+	mrs	x3, elr_el1
+	mov x4, x8
 	ldr x3,=show_invalid_entry_message
 	blr	x3
 
