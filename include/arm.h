@@ -95,6 +95,45 @@ flush_tlb()
     asm volatile("dsb sy");
 }
 
+static inline uint64
+r_cntpct_el0()
+{
+    uint64 x;
+    asm volatile("mrs %0,cntpct_el0" : "=r"(x));
+    return x;
+}
+
+static inline uint64
+r_cntfrq_el0()
+{
+    uint64 x;
+    asm volatile("mrs %0,cntfrq_el0" : "=r"(x));
+    return x;
+}
+static inline void
+w_cntp_cval_el0(uint64 cntp_cval_el0)
+{
+    asm volatile("msr cntp_cval_el0, %0" ::"r"(cntp_cval_el0));
+}
+static inline void
+w_cntp_ctl_el0(uint64 cntp_ctl_el0)
+{
+    asm volatile("msr cntp_ctl_el0, %0" ::"r"(cntp_ctl_el0));
+}
+
+static inline void
+intr_on()
+{
+    asm volatile("msr daifclr,#2");
+    asm volatile("dsb sy; isb" ::: "memory");
+}
+static inline void
+intr_off()
+{
+    asm volatile("msr daifset,#2");
+    asm volatile("dsb sy; isb" ::: "memory");
+}
+
 typedef uint64 pte_t;
 typedef uint64 *pagetable_t; // 512 PTE
 #endif                       // __ASSEMBLER__

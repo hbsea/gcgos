@@ -52,6 +52,23 @@ struct gicc_regs
 {
     int GICC_CTLR;
     int GICC_PMR;
+    int GICC_BPR;
+    int GICC_IAR;
+    int GICC_EOIR;
+    int GICC_RPR;
+    int GICC_HPPIR;
+    int GICC_ABPR;
+    int GICC_AIAR;
+    int GICC_AEOIR;
+    int GICC_AHPPIR;
+    int Reserve1[41];
+    int GICC_APR0;
+    int Reserve2[3];
+    int GICC_NSAPR0;
+    int Rserve3[6];
+    int GICC_IIDR;
+    int Rserve4[960];
+    int GICC_DIR;
 };
 
 #define gicd ((struct gicd_regs *)GICD_BASE)

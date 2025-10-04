@@ -44,7 +44,7 @@ int pl011_uart_get_char(){
     }
 }
 
-int pl011_uart_recev()
+int pl011_uart_intr()
 {
     while (1){
         int c= pl011_uart_get_char();
@@ -53,11 +53,13 @@ int pl011_uart_recev()
 	}
         consputc(c);
     }
+    pl011_regs->ICR |=(1<<4);
 };
 
 
 void pl011_uart_ie(void)
 {
-    printf("IFLS : %b RIS :%b \n",pl011_regs->IFLS,pl011_regs->RIS,&pl011_regs->TDR);
+    //pl011_regs->IFLS =0b010010;
     pl011_regs->IMSC |= (0b1 << 4);
+    printf("PL011 enabled:IFLS : %b RIS :%b \n",pl011_regs->IFLS,pl011_regs->RIS,&pl011_regs->TDR);
 }

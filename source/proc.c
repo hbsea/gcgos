@@ -148,6 +148,8 @@ void wakeup(void *chan)
 
 void sched()
 {
+
+    //intr_off();
     struct proc *np, *cp;
     static int first = 1;
 
@@ -176,6 +178,8 @@ void sched()
 
         first = 0;
         printf("cp pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid, cp->ctx.x30, cp->tf->sp_el0);
+
+	debug();
 
         asm volatile("mov x30,%0" ::"r"(cp->ctx.x30));
         asm volatile("mov sp,%0" ::"r"(cp->ctx.sp));

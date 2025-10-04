@@ -21,11 +21,9 @@ int kernel_main()
     sys_fork();
     gic_init();
     pl011_uart_ie();
-    //pl011_uart_send_char('A');
 
-    //while(1){
-    //    pl011_uart_recev();
-    //}
+    timerinit();
+
     sched();
 
     return 0;

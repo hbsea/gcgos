@@ -36,7 +36,6 @@ ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 	stp x4, x5, [x0,#0x20]
 	stp x6, x7, [x0,#0x30]
 	stp x8, x9, [x0,#0x40]
-	ldp x8, x9, [x0,#0x40]
 	stp x10, x11, [x0,#0x50]
 	stp x12, x13, [x0,#0x60]
 	stp x14, x15, [x0,#0x70]
@@ -74,8 +73,9 @@ ELx->ELy AArch32|0x600     |0x680     |0x700     |0x780     |
 	ldr x5,=show_invalid_entry_message
 	blr	x5
 
-	ldr x0,=usertrap
-	blr x0
+	mov x0,#\type
+	ldr x1,=usertrap
+	blr x1
   
 
 	//user return userret()

@@ -4,7 +4,8 @@ gdb-remote 1234
 
 #b gic_init
 #b sched
-#b uproc1
+#b timerinit
+#b kerneltrap
 c
 
 

@@ -3,11 +3,12 @@
 #include "types.h"
 #include "defs.h"
 
-#define UART0_IRQ (121+32)//0x79 121
 
 //https://speakerdeck.com/tnishinaga/baremetal-raspberry-pi-4-gicv2
 void gic_init()
 {
+    
+    // printf("Addr:%p\n",&gicc->GICC_DIR);
 
     gicd->GICD_CTLR=0;
 	
@@ -18,29 +19,31 @@ void gic_init()
     //}
 
     // 0. 设置触发方式（Level-sensitive）
-    //gicd->GICD_ICFGR[UART0_IRQ / 16] &= ~(2 << ((UART0_IRQ % 16) * 2));
+    //gicd->GICD_ICFGR[PL011_IRQ / 16] &= ~(2 << ((PL011_IRQ % 16) * 2));
     
     // 1. 使能中断
-    gicd->GICD_ISENABLER[UART0_IRQ / 32] = (1 << (UART0_IRQ % 32));
+    gicd->GICD_ISENABLER[PL011_IRQ / 32] = (1 << (PL011_IRQ % 32));
+    gicd->GICD_ISENABLER[TIMER_IRQ / 32] = (1 << (TIMER_IRQ % 32));
 
     // gicd->GICD_ISENABLER[0] = 0x0000FFFF; //SGI
    
     // 2. 设置优先级（0 = highest）
-    gicd->GICD_IPRIORITYR[UART0_IRQ / 4] &= ~((uint32)0xFF << ((UART0_IRQ % 4) * 8));
+    gicd->GICD_IPRIORITYR[PL011_IRQ / 4] &= ~((uint32)0xFF << ((PL011_IRQ % 4) * 8));
+    gicd->GICD_IPRIORITYR[TIMER_IRQ / 4] &= ~((uint32)0xFF << ((TIMER_IRQ % 4) * 8));
 
     // 3. 设置目标 CPU（假设 CPU0）
-    //gicd->GICD_ITARGETSR[UART0_IRQ / 4] |= (1 << ((UART0_IRQ % 4) * 8));
-    gicd->GICD_ITARGETSR[UART0_IRQ / 4] &= ~((uint32)0xFF << ((UART0_IRQ % 4) * 8)); // clear old
-    gicd->GICD_ITARGETSR[UART0_IRQ / 4] |= ((uint32)0x1 << 0) << ((UART0_IRQ % 4) * 8); // CPU0
+    //gicd->GICD_ITARGETSR[PL011_IRQ / 4] |= (1 << ((PL011_IRQ % 4) * 8));
+    gicd->GICD_ITARGETSR[PL011_IRQ / 4] &= ~((uint32)0xFF << ((PL011_IRQ % 4) * 8)); // clear old
+    gicd->GICD_ITARGETSR[PL011_IRQ / 4] |= ((uint32)0x1 << 0) << ((PL011_IRQ % 4) * 8); // CPU0
 
+    gicd->GICD_ITARGETSR[TIMER_IRQ / 4] &= ~((uint32)0xFF << ((TIMER_IRQ % 4) * 8)); // clear old
+    gicd->GICD_ITARGETSR[TIMER_IRQ / 4] |= ((uint32)0x1 << 0) << ((TIMER_IRQ % 4) * 8); // CPU0
 
     gicc->GICC_CTLR = 0x01;
     gicd->GICD_CTLR = 0x01;
     gicc->GICC_PMR = 0xFF;
     printf("gicd_ctlr:%d gicc_ctlr:%d \n",gicd->GICD_CTLR,gicc->GICC_CTLR);
-
-    asm volatile("msr daifclr,#2");
-    asm volatile("dsb sy; isb" ::: "memory");
+    intr_on();
 }
 
 void write_gicd_sgir(void)

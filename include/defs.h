@@ -38,8 +38,8 @@ void wakeup(void *chan);
 // trap.c
 void trapinit(void);
 void trapinithart(void);
-void kerneltrap(void);
-uint64 usertrap(void);
+void kerneltrap(int);
+uint64 usertrap(int);
 void prepare_return(void);
 void show_invalid_entry_message(uint64, int, uint64, uint64, uint64);
 
@@ -56,3 +56,6 @@ void uproc2();
 
 // swtch.S
 void swtch(struct context *, struct context *);
+
+//timer.c
+void timerinit(void);

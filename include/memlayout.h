@@ -10,6 +10,9 @@
 // hardware is (GPIO_BASE|0x00210000)
 #define AUX_BASE (GPIO_BASE | 0x15000)
 #define PL011_BASE (GPIO_BASE | 0x1000)
+#define PL011_IRQ (121+32)//0x79 121
+#define TIMER_IRQ 30
+
 #define GIC_BASE 0xFF840000
 #define GICD_BASE (GIC_BASE + 0x1000)
 #define GICC_BASE (GIC_BASE + 0x2000)

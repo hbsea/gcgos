@@ -4,6 +4,8 @@
 #include "memlayout.h"
 #include "proc.h"
 #include "sysregs.h"
+#include "gicv2.h"
+#include "uart.h"
 
 // in kernelvec.S, calls kerneltrap().
 void kernelvec();
@@ -43,48 +45,97 @@ void trapinithart(void)
 }
 
 // EL1->EL1
-void kerneltrap(void)
+void kerneltrap(int type)
 {
 
-	printf("kernel trap SPSR_EL1:%p \n", (void *)r_spsr_el1());
-	int kec = (((r_esr_el1()) >> 26) & 0x3f);
-	printf("kec: %b not handle\n", kec);
-	panic("GET KERNEL TRAP");
+	if(type==4){
+		printf("kernel trap SPSR_EL1:%p \n", (void *)r_spsr_el1());
+		int kec = (((r_esr_el1()) >> 26) & 0x3f);
+		printf("kec: %b not handle\n", kec);
+		panic("GET KERNEL TRAP");
+	}else if(type==5){
+		int id=gicc->GICC_IAR & 0x3FF;
+		printf("IAR:%d\n",id);
+		if(id==PL011_IRQ){
+			pl011_uart_intr();
+			gicc->GICC_EOIR=id;
+		}else if(id == TIMER_IRQ){
+		//do nothing 
+			printf("kernel timer interrupt fireup\n");
+			uint64 cnt=r_cntpct_el0();
+			uint64 interval=10000000;
+			w_cntp_cval_el0(cnt+interval);
+			//w_cntp_ctl_el0(0b01);
+
+			gicc->GICC_EOIR=id; //中断处于 active 状态且没有写 EOIR 时，会抑制同优先级或更低优先级的其他中断。
+		}else{
+			printf("unexpected interrupt irq=%d\n",id);
+			panic("unhandled kernel irq");
+		}
+	}
+
 
 	// printf("r_esr_el1: %b\n", ((r_esr_el1())>>26 & 0x3F));
 }
-uint64 usertrap(void)
+uint64 usertrap(int type)
 {
+	printf("trap type:%d\n",type);
+	int which_dev=0;
 
 	w_vbar_el1((uint64)kernelvec);
 
 	curproc->tf->elr_el1 = r_elr_el1();
 	curproc->tf->sp_el0 = r_sp_el0();
 
-	// SPSR_EL1[3:0]异常前的 CPU 模式（EL）
-	//  0b0000 = EL0t（用户态）
-	//  0b0100 = EL1t（内核态 SP_EL0）
-	//  0b0101 = EL1h（内核态 SP_EL1）
-	int ec = (((r_esr_el1()) >> 26) & 0x3f);
-	printf("curproc addr:%p proc[0]:%p proc[1]:%p curproc id:%d ser trap ec:%b call_num=%d\n", curproc, &proc[0], &proc[1], curproc->pid, ec, curproc->tf->x8);
-	switch (ec)
-	{
-	case 0b010101:
-		syscall();
-		break;
-	case 0b000000:
-		printf("ec: %b in user space cpu can't fetch instruction because the mmu not map. the arm doc says:Unknown reason. \n", ec);
-		break;
-	case 0b100100:
-		printf("ec: %b MMU data abort. \n", ec);
-		break;
-	default:
-		printf("ec: %b not in handle\n", ec);
-		break;
+	if(type==8){
+		// SPSR_EL1[3:0]异常前的 CPU 模式（EL）
+		//  0b0000 = EL0t（用户态）
+		//  0b0100 = EL1t（内核态 SP_EL0）
+		//  0b0101 = EL1h（内核态 SP_EL1）
+		int ec = (((r_esr_el1()) >> 26) & 0x3f);
+		printf("curproc addr:%p proc[0]:%p proc[1]:%p curproc id:%d ser trap ec:%b call_num=%d\n", curproc, &proc[0], &proc[1], curproc->pid, ec, curproc->tf->x8);
+		switch (ec)
+		{
+			case 0b010101:
+				syscall();
+				break;
+			case 0b000000:
+				printf("ec: %b in user space cpu can't fetch instruction because the mmu not map. the arm doc says:Unknown reason. \n", ec);
+				break;
+			case 0b100100:
+				printf("ec: %b MMU data abort. \n", ec);
+				break;
+			default:
+				printf("ec: %b not in handle\n", ec);
+				break;
+		}
+	}else if(type==9){
+		int id=gicc->GICC_IAR & 0x3FF;
+		printf("IAR:%d\n",id);
+		if(id==PL011_IRQ){
+			pl011_uart_intr();
+			gicc->GICC_EOIR=id;
+		}else if(id==TIMER_IRQ){
+			printf("user space timerintr fireup\n");
+			uint64 cnt=r_cntpct_el0();
+			uint64 interval=10000000;
+			w_cntp_cval_el0(cnt+interval);
+
+			gicc->GICC_EOIR=id;
+			sched();
+
+		}else{
+			printf("unexpected interrupt irq=%d\n",id);
+			panic("unhandled user irq");
+		}
 	}
 
 	prepare_return();
 	return (uint64)curproc->pagetable;
+}
+
+int devintr(){
+	
 }
 
 const char *entry_error_messages[] = {
