@@ -1,12 +1,10 @@
 
 all: clean kernel8.img
-	#qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s && make clean
 	qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s 
-	#lldb -s .lldbinit
 
 
 kernel8.img: 
-	clang --target=aarch64-elf  -Iinclude -nostdlib -ffreestanding source/*.S source/*.c -T source/kernel.ld -o build/kernel8.elf
+	clang --target=aarch64-elf -w -g -O0 -Iinclude -nostdlib -ffreestanding source/*.S source/*.c -T source/kernel.ld -o build/kernel8.elf
 
 # 因为elf中包含有header、符号表等，在加载kernel的时候不会对这些进行处理，所以直接使用elf将不会正确运行，需要objcopy，最开始安装llvm时，因为objcopy没有软连接，使用mdfind -name objcopy找到正确的objcopy路径。
 	llvm-objcopy -O binary build/kernel8.elf build/kernel8.img

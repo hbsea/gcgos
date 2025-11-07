@@ -1,9 +1,9 @@
-#include "uart.h"
 #include "defs.h"
-#include "vm.h"
+#include "gicv2.h"
 #include "memlayout.h"
 #include "proc.h"
-#include "gicv2.h"
+#include "uart.h"
+#include "vm.h"
 
 int kernel_main()
 {
@@ -13,7 +13,6 @@ int kernel_main()
     kinit();
     kvminit();
     kvminithart();
-
     procinit();
     trapinit();
     trapinithart();
