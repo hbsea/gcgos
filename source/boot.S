@@ -1,3 +1,4 @@
+#include "arm.h"
 #include "sysregs.h"
 //.开头的是汇编器的指示指令，本身不会做任何事情。
 
@@ -7,18 +8,19 @@
 
 .global _sstart  //.global可以在整个工程中使用，如果仅有__start，在本文档中使用，__start$在本段中使用，默认为_start,修改为其他字符串，需要在linker中定义:ENTRY(sometext)
 _sstart:
-    mrs x0, CurrentEL
-    lsr x0, x0, #2
-
-    mrs x0,mpidr_el1
-    // 根据手册The Cortex-A75 core is single-threaded, so this field has the value 0x00
-    //https://developer.arm.com/documentation/100403/0300/register-descriptions/aarch64-system-registers/mpidr-el1--multiprocessor-affinity-register--el1
-    and x0,x0,#3
-    cbz x0,master
-proc_hang:
-    wfi
-    b proc_hang
-
+    //ldr x0,=master
+    //ldr x1, =spin_cpu1
+    //str x0,[x1]
+    // sev
+    
+    //mrs x0, CurrentEL
+    //lsr x0, x0, #2
+//
+//    mrs x0,mpidr_el1
+//    // 根据手册The Cortex-A75 core is single-threaded, so this field has the value 0x00
+//    //https://developer.arm.com/documentation/100403/0300/register-descriptions/aarch64-system-registers/mpidr-el1--multiprocessor-affinity-register--el1
+//    and x0,x0,#3
+//    cbz x0,master
 
 //EL2->EL1 qemu default is EL2
 master:
@@ -42,7 +44,11 @@ master:
 
 
 el1_entry:
-    mrs x0, CurrentEL
+    //starting second core
+    ldr x0, =SPIN_CPU1
+    ldr x1, =_sstart
+    str x1,[x0]
+    sev
 
     //At EL1, FP/SIMD is disabled by default.
     // Read current CPACR_EL1
@@ -68,3 +74,7 @@ el1_entry:
     b proc_hang
 
     
+ proc_hang:
+     wfi
+     b proc_hang
+

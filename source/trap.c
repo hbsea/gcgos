@@ -71,7 +71,7 @@ void kerneltrap(int type)
             // do nothing
             printf("kernel timer interrupt fireup\n");
             uint64 cnt = r_cntpct_el0();
-            uint64 interval = 10000000;
+            uint64 interval = 100000000;
             w_cntp_cval_el0(cnt + interval);
             // w_cntp_ctl_el0(0b01);
 
@@ -89,7 +89,7 @@ void kerneltrap(int type)
 }
 uint64 usertrap(int type)
 {
-    printf("trap type:%d\n", type);
+    printf("trap type:%d, from cpu: %d\n", type, cpuid());
     int which_dev = 0;
 
     w_vbar_el1((uint64)kernelvec);
@@ -140,7 +140,7 @@ uint64 usertrap(int type)
         {
             printf("user space timerintr fireup\n");
             uint64 cnt = r_cntpct_el0();
-            uint64 interval = 80000000;
+            uint64 interval = 100000000;
             w_cntp_cval_el0(cnt + interval);
 
             gicc->GICC_EOIR = id;

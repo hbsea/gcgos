@@ -29,6 +29,7 @@ extern void enable_mmu(uint64 ttbr0_el1, uint64 ttbr1_el1, uint64 tcr_el1, uint6
 // proc.c
 void proc_mapstacks(pagetable_t);
 void procinit(void);
+int cpuid(void);
 void userinit(void);
 struct proc *newproc(void);
 void sched(void);

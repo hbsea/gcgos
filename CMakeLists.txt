@@ -6,7 +6,8 @@ project(gcgos C ASM)
 
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_ASM_COMPILER clang)
-set(CMAKE_C_FLAGS "--target=aarch64-elf -g -O0 -ffreestanding -nostdlib")
+# set(CMAKE_C_FLAGS "--target=aarch64-elf -g -O0 -ffreestanding -nostdlib")
+set(CMAKE_C_FLAGS "--target=aarch64-elf -ffreestanding -nostdlib")
 # set(CMAKE_EXE_LINKER_FLAGS "--target=aarch64-elf -nostdlib -ffreestanding -T ${CMAKE_CURRENT_SOURCE_DIR}/source/kernel.ld")
 set(CMAKE_EXE_LINKER_FLAGS "-T ${CMAKE_CURRENT_SOURCE_DIR}/source/kernel.ld")
 
@@ -20,6 +21,7 @@ add_executable(kernel8 ${SOURCES_C} ${SOURCES_ASM})
 
 target_include_directories(kernel8 PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_options(kernel8 PRIVATE "--target=aarch64-elf -g -O0 -ffreestanding")
+# target_compile_options(kernel8 PRIVATE "--target=aarch64-elf -ffreestanding")
 
 set_target_properties(kernel8 PROPERTIES OUTPUT_NAME "kernel8.elf")
 

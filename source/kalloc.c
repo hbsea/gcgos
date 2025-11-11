@@ -1,12 +1,11 @@
 #include "types.h"
 #include "memlayout.h"
-#include "arm.h"
+#include "param.h"
 #include "defs.h"
 
-#define NCPU 4
 __attribute__((aligned(16))) char stack0[4096 * NCPU];
 
-extern char end[]; // first address after kernel.  defined by kernel.ld.
+extern char end[];  // first address after kernel.  defined by kernel.ld.
 void freerange(void *pa_start, void *pa_end);
 
 struct run
@@ -53,8 +52,7 @@ void *kalloc(void)
 {
     struct run *r;
     r = kmem.freelist;
-    if (r)
-        kmem.freelist = r->next;
+    if (r) kmem.freelist = r->next;
 
     return (void *)r;
 }

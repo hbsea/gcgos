@@ -1,5 +1,5 @@
-#include "param.h"
 #include "proc.h"
+#include "param.h"
 #include "defs.h"
 #include "arm.h"
 #include "defs.h"
@@ -40,6 +40,12 @@ void procinit(void)
     }
 }
 
+int cpuid(void)
+{
+    int id = r_mpidr_el1();
+    return id;
+}
+
 int allocpid(void)
 {
     int pid;
@@ -52,9 +58,11 @@ pagetable_t proc_pagetable(struct proc *p)
 {
     pagetable_t pagetable;
     pagetable = uvmcreat();
-    mappages(pagetable, TRAMPOLINE, (uint64)trampoline, 2 * PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
+    mappages(pagetable, TRAMPOLINE, (uint64)trampoline, 2 * PGSIZE,
+             PTE_NORMAL | PTE_AP_RW_EL1);
     p->tf = (struct trapframe *)kalloc();
-    mappages(pagetable, TRAPFRAME, (uint64)p->tf, PGSIZE, PTE_NORMAL | PTE_AP_RW_EL1);
+    mappages(pagetable, TRAPFRAME, (uint64)p->tf, PGSIZE,
+             PTE_NORMAL | PTE_AP_RW_EL1);
 
     printf("new user pagetable:%p p->tf:%p \n", pagetable, p->tf);
     return pagetable;
@@ -99,7 +107,8 @@ void forkret(void)
         uint64 utext = (uint64)(&uproc1);
         // printf("utext:%p uproc:%p\n", utext, &uproc1);
 
-        mappages(curproc->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
+        mappages(curproc->pagetable, 0x0, utext, PGSIZE,
+                 PTE_NORMAL | PTE_AP_RW);
         curproc->tf->sp_el0 = PGSIZE;
     }
 
@@ -127,7 +136,10 @@ struct proc *newproc(void)
     np->tf->sp_el0 = PGSIZE;
     np->ctx.sp = (uint64)(np->kstack + PGSIZE);
 
-    printf("newproc created,pid is: %d\ ppid is: %d addr:%p np->ctx.x30:%p p->ctx.sp:%p\n", np->pid, np->ppid, np, np->ctx.x30, np->ctx.sp);
+    printf(
+        "newproc created,pid is: %d\ ppid is: %d addr:%p np->ctx.x30:%p "
+        "p->ctx.sp:%p\n",
+        np->pid, np->ppid, np, np->ctx.x30, np->ctx.sp);
     return np;
 }
 
@@ -141,15 +153,13 @@ void sleep(void *chan)
 void wakeup(void *chan)
 {
     struct proc *p;
-    for (p = proc; p < &proc[NPROC]; p++)
-        if (p->state == WAITING && p->chan == chan)
-            p->state = RUNNABLE;
+    if (p->state == WAITING && p->chan == chan)
+        for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
 }
 
 void sched()
 {
-
-    //intr_off();
+    // intr_off();
     struct proc *np, *cp;
     static int first = 1;
 
@@ -163,32 +173,35 @@ void sched()
                 printf("NO PROC IS RUNNING\n");
                 np = &proc[0];
             }
-            if (np->state == RUNNABLE)
-                break;
+            if (np->state == RUNNABLE) break;
         }
-        if (np->state == RUNNABLE)
-            break;
+        if (np->state == RUNNABLE) break;
     }
 
-    //write_gicd_sgir();
+    // write_gicd_sgir();
 
     // if (cp == np)
     if (first)
     {
-
         first = 0;
-        printf("cp pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid, cp->ctx.x30, cp->tf->sp_el0);
+        printf("cp pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n",
+               cp->pid, cp->ctx.x30, cp->tf->sp_el0);
 
-	debug();
+        debug();
 
         asm volatile("mov x30,%0" ::"r"(cp->ctx.x30));
         asm volatile("mov sp,%0" ::"r"(cp->ctx.sp));
         asm volatile("ret");
     }
 
-    printf("old pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid, cp->ctx.x30, cp->tf->sp_el0);
+    printf("old pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid,
+           cp->ctx.x30, cp->tf->sp_el0);
     curproc = np;
     printf("c:%p np:%p\n", cp, np);
-    printf("swtch : curproc pid:%d pagetable:%p kstack:%p new proc pid: %d curproc->ctx.x30:%p curproc->ctx.sp:%p\n", curproc->pid, curproc->pagetable, curproc->kstack, curproc->pid, curproc->ctx.x30, curproc->ctx.sp);
+    printf(
+        "swtch : curproc pid:%d pagetable:%p kstack:%p new proc pid: %d "
+        "curproc->ctx.x30:%p curproc->ctx.sp:%p\n",
+        curproc->pid, curproc->pagetable, curproc->kstack, curproc->pid,
+        curproc->ctx.x30, curproc->ctx.sp);
     swtch(&cp->ctx, &np->ctx);
 }

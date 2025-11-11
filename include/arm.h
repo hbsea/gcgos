@@ -8,6 +8,14 @@ debug()
 }
 
 static inline uint64
+r_mpidr_el1()
+{
+    uint64 x;
+    asm volatile("mrs %0,mpidr_el1" : "=r"(x));
+    asm volatile("and %0,%0,#3": "=r"(x));
+    return x;
+}
+static inline uint64
 r_spsr_el1()
 {
     uint64 x;
@@ -202,3 +210,5 @@ typedef uint64 *pagetable_t; // 512 PTE
 #define TCR_T1SZ(n) (((n) & 0x3f) << 16)
 #define TCR_TG1(n) (((n) & 0x3) << 30)
 #define TCR_IPS(n) (((uint64)(n) & 0x7) << 32)
+
+#define SPIN_CPU1 0xE0
