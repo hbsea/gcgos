@@ -4,7 +4,9 @@
 #include "arm.h"
 #include "defs.h"
 #include "memlayout.h"
-#include "gicv2.h"
+
+extern char _binary_user1_bin_start[];
+extern char _binary_user1_bin_size[];
 
 extern char userret[];
 extern char trampoline[];
@@ -102,14 +104,14 @@ void forkret(void)
     if (first)
     {
         first = 0;
+        printf("_binary_user1_bin_size:%p;_binary_user1_bin_start:%p\n",
+               _binary_user1_bin_size, _binary_user1_bin_start);
+        uint64 upsize = PGROUNDUP((uint64)_binary_user1_bin_size) + PGSIZE;
 
-        // fake init user text map,replace it when file ready.
-        uint64 utext = (uint64)(&uproc1);
-        // printf("utext:%p uproc:%p\n", utext, &uproc1);
-
-        mappages(curproc->pagetable, 0x0, utext, PGSIZE,
-                 PTE_NORMAL | PTE_AP_RW);
-        curproc->tf->sp_el0 = PGSIZE;
+        mappages(curproc->pagetable, 0x0, (uint64)_binary_user1_bin_start,
+                 upsize, PTE_NORMAL | PTE_AP_RW);
+        curproc->tf->elr_el1 = 0x3d8;
+        curproc->tf->sp_el0 = upsize;
     }
 
     prepare_return();
@@ -128,8 +130,8 @@ struct proc *newproc(void)
     np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
     np->ctx.x30 = (uint64)forkret;
 
-    uint64 utext = (uint64)(&uproc2);
-    printf("utext:%p uproc:%p tf:%p\n", utext, &uproc2, np->tf);
+    uint64 utext = (uint64)(0);
+    printf("utext:%p uproc:%p tf:%p\n", utext, 0, np->tf);
 
     mappages(np->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
 

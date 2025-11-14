@@ -8,11 +8,12 @@
 
 .global _sstart  //.global可以在整个工程中使用，如果仅有__start，在本文档中使用，__start$在本段中使用，默认为_start,修改为其他字符串，需要在linker中定义:ENTRY(sometext)
 _sstart:
-    //ldr x0,=master
-    //ldr x1, =spin_cpu1
-    //str x0,[x1]
-    // sev
-    
+    //starting second core
+//    ldr x0, =SPIN_CPU1
+//    ldr x1, = master
+//    str x1,[x0]
+//    sev
+//    
     //mrs x0, CurrentEL
     //lsr x0, x0, #2
 //
@@ -44,11 +45,6 @@ master:
 
 
 el1_entry:
-    //starting second core
-    ldr x0, =SPIN_CPU1
-    ldr x1, =_sstart
-    str x1,[x0]
-    sev
 
     //At EL1, FP/SIMD is disabled by default.
     // Read current CPACR_EL1

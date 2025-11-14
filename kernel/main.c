@@ -1,5 +1,4 @@
 #include "types.h"
-#include "arm.h"
 #include "defs.h"
 #include "gicv2.h"
 #include "memlayout.h"
@@ -24,7 +23,7 @@ int kernel_main()
         trapinit();
         trapinithart();
         userinit();
-        sys_fork();
+        // sys_fork();
         gic_init();
         pl011_uart_ie();
         timerinit();
@@ -37,10 +36,11 @@ int kernel_main()
         while (started == 0)
             ;
         __sync_synchronize();
-        printf("cpuid %d starting\n", cpuid());
         kvminithart();
+        printf("cpuid %d starting\n", cpuid());
         trapinit();
         gic_init();
+        timerinit();
     }
 
     sched();
