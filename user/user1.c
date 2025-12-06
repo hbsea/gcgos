@@ -1,18 +1,11 @@
-void fork()
-{
-    asm volatile("mov x8,#0x1");
-    asm volatile("svc #0");
-}
+#include "ulib.h"
 int main()
 {
-    fork();
-    for (int i = 0;; i++)
-        ;
-
-    // asm volatile("mov x8,#0x3");
-    // asm volatile("svc #0");
-
-    // asm volatile("mov x8,#0x2");
-    // asm volatile("svc #0");
+    int pid, fds[2];
+    pipe(fds);
+    pid = fork();
+    write(fds[1], "xyz", 4);
+    puts("\nw\n");
+    while (1);
     return 0;
 }

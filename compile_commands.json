@@ -1,0 +1,408 @@
+[
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/boot.o",
+      "kernel/boot.S"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/boot.S",
+    "output": "/home/any/gcgos/build/kernel/boot.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/main.o",
+      "kernel/main.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/main.c",
+    "output": "/home/any/gcgos/build/kernel/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/mini_uart.o",
+      "kernel/mini_uart.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/mini_uart.c",
+    "output": "/home/any/gcgos/build/kernel/mini_uart.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/pl011_uart.o",
+      "kernel/pl011_uart.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/pl011_uart.c",
+    "output": "/home/any/gcgos/build/kernel/pl011_uart.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/printf.o",
+      "kernel/printf.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/printf.c",
+    "output": "/home/any/gcgos/build/kernel/printf.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/console.o",
+      "kernel/console.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/console.c",
+    "output": "/home/any/gcgos/build/kernel/console.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/kalloc.o",
+      "kernel/kalloc.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/kalloc.c",
+    "output": "/home/any/gcgos/build/kernel/kalloc.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/vm.o",
+      "kernel/vm.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/vm.c",
+    "output": "/home/any/gcgos/build/kernel/vm.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/mmu.o",
+      "kernel/mmu.S"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/mmu.S",
+    "output": "/home/any/gcgos/build/kernel/mmu.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/proc.o",
+      "kernel/proc.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/proc.c",
+    "output": "/home/any/gcgos/build/kernel/proc.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/trap.o",
+      "kernel/trap.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/trap.c",
+    "output": "/home/any/gcgos/build/kernel/trap.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/trampoline.o",
+      "kernel/trampoline.S"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/trampoline.S",
+    "output": "/home/any/gcgos/build/kernel/trampoline.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/kernelvec.o",
+      "kernel/kernelvec.S"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/kernelvec.S",
+    "output": "/home/any/gcgos/build/kernel/kernelvec.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/swtch.o",
+      "kernel/swtch.S"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/swtch.S",
+    "output": "/home/any/gcgos/build/kernel/swtch.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/syscall.o",
+      "kernel/syscall.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/syscall.c",
+    "output": "/home/any/gcgos/build/kernel/syscall.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/exec.o",
+      "kernel/exec.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/exec.c",
+    "output": "/home/any/gcgos/build/kernel/exec.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/gicv2.o",
+      "kernel/gicv2.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/gicv2.c",
+    "output": "/home/any/gcgos/build/kernel/gicv2.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/timer.o",
+      "kernel/timer.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/timer.c",
+    "output": "/home/any/gcgos/build/kernel/timer.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/spinlock.o",
+      "kernel/spinlock.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/spinlock.c",
+    "output": "/home/any/gcgos/build/kernel/spinlock.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/fd.o",
+      "kernel/fd.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/fd.c",
+    "output": "/home/any/gcgos/build/kernel/fd.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/pipe.o",
+      "kernel/pipe.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/pipe.c",
+    "output": "/home/any/gcgos/build/kernel/pipe.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/kernel/elf.o",
+      "kernel/elf.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/kernel/elf.c",
+    "output": "/home/any/gcgos/build/kernel/elf.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "build/user/user1.o",
+      "user/user1.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/user/user1.c",
+    "output": "/home/any/gcgos/build/user/user1.o"
+  },
+  {
+    "arguments": [
+      "/usr/lib/llvm/17/bin/clang",
+      "-g",
+      "-O0",
+      "--target=aarch64-elf",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "build/user/user2.o",
+      "user/user2.c"
+    ],
+    "directory": "/home/any/gcgos",
+    "file": "/home/any/gcgos/user/user2.c",
+    "output": "/home/any/gcgos/build/user/user2.o"
+  }
+]

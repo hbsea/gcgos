@@ -22,28 +22,27 @@ int kernel_main()
         procinit();
         trapinit();
         trapinithart();
-        userinit();
         // sys_fork();
         gic_init();
         pl011_uart_ie();
-        timerinit();
+        // timerinit();
+        userinit();
 
         __sync_synchronize();
         started = 1;
     }
     else
     {
-        while (started == 0)
-            ;
+        while (started == 0);
         __sync_synchronize();
         kvminithart();
         printf("cpuid %d starting\n", cpuid());
         trapinit();
         gic_init();
-        timerinit();
+        // timerinit();
     }
 
+    // printf("entry addr:%p\n", get_entry());
     sched();
-
     return 0;
 }

@@ -36,7 +36,7 @@ struct AUX_MU_REG
 struct PL011_REG
 {
     int DR;
-    int RSRECR[5]; 
+    int RSRECR[5];
     int FR;
     int Reserv1;
     int ILPR;
@@ -57,16 +57,16 @@ struct PL011_REG
     int TDR;
 };
 
-#define gpio ((struct gpioStruct *)GPIO_BASE)
-#define aux_mu_regs ((struct AUX_MU_REG *)AUX_BASE)
-#define pl011_regs ((struct PL011_REG *)PL011_BASE)
+#define gpio ((struct gpioStruct*)GPIO_BASE)
+#define aux_mu_regs ((struct AUX_MU_REG*)AUX_BASE)
+#define pl011_regs ((struct PL011_REG*)PL011_BASE)
 
 void mini_uart_init(void);
 void mini_uart_send_char(char c);
-void mini_uart_send_text(char *s);
+void mini_uart_send_text(char* s);
 int mini_uart_recev(void);
 void pl011_uart_init(void);
 void pl011_uart_send_char(char c);
-void pl011_uart_send_text(char *s);
-int pl011_uart_intr(void);
+void pl011_uart_send_text(char* s);
+void pl011_uart_intr(void);
 void pl011_uart_ie(void);

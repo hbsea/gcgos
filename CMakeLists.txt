@@ -6,10 +6,10 @@ project(gcgos C ASM)
 
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_ASM_COMPILER clang)
- set(CMAKE_C_FLAGS "-g -O0")
+set(CMAKE_C_FLAGS "--target=aarch64-elf -g -O0 -nostdlib -ffreestanding")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld --target=aarch64-elf")
 
-# set(CMAKE_C_FLAGS "--target=aarch64-elf -g -O0 -ffreestanding -nostdlib")
-# set(CMAKE_EXE_LINKER_FLAGS "-T ${CMAKE_CURRENT_SOURCE_DIR}/source/kernel.ld")
+
 # user
 file(GLOB U_SOURCES_C "${CMAKE_CURRENT_SOURCE_DIR}/user/*.c")
 file(GLOB U_SOURCES_ASM "${CMAKE_CURRENT_SOURCE_DIR}/user/*.S")
@@ -17,8 +17,8 @@ file(GLOB U_SOURCES_ASM "${CMAKE_CURRENT_SOURCE_DIR}/user/*.S")
 foreach(u_src ${U_SOURCES_C})
     get_filename_component(name ${u_src} NAME_WE)
     add_executable(${name} ${u_src})
-    target_compile_options(${name} PRIVATE "--target=aarch64-elf -ffreestanding -nostdlib")
-    target_link_options(${name} PRIVATE "--target=aarch64-elf" "-fuse-ld=lld" "-T${CMAKE_CURRENT_SOURCE_DIR}/user/user.ld" "-nostdlib" "-ffreestanding" )
+    target_compile_options(${name} PRIVATE "--target=aarch64-elf")
+    target_link_options(${name} PRIVATE "-T${CMAKE_CURRENT_SOURCE_DIR}/user/user.ld")
     set_target_properties(${name} PROPERTIES OUTPUT_NAME "${name}.elf")
 
     set(OBJ_FILE ${CMAKE_CURRENT_BINARY_DIR}/${name}.o)
@@ -45,10 +45,10 @@ file(GLOB K_SOURCES_ASM "${CMAKE_CURRENT_SOURCE_DIR}/kernel/*.S")
 add_library(kernel_obj OBJECT ${K_SOURCES_C} ${K_SOURCES_ASM})
 
 target_include_directories(kernel_obj PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_compile_options(kernel_obj PRIVATE "--target=aarch64-elf -g -O0 -ffreestanding")
+target_compile_options(kernel_obj PRIVATE "--target=aarch64-elf")
 
 add_executable(kernel8 $<TARGET_OBJECTS:kernel_obj> ${USER_OBJS})
-target_link_options(kernel8 PRIVATE "--target=aarch64-elf" "-fuse-ld=lld" "-T${CMAKE_CURRENT_SOURCE_DIR}/kernel/kernel.ld" "-nostdlib")
+target_link_options(kernel8 PRIVATE "-T${CMAKE_CURRENT_SOURCE_DIR}/kernel/kernel.ld" "-nostdlib")
 set_target_properties(kernel8 PROPERTIES OUTPUT_NAME "kernel8.elf")
 
 

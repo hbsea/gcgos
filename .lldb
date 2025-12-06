@@ -1,0 +1,11 @@
+target stop-hook add --one-liner "disassemble --mixed"
+target create build/kernel8.elf
+gdb-remote 1234
+# b prepare_return
+b forkret
+b pipe_write
+b sys_write
+b sys_pipe
+b w_elr_el1
+b get_entry
+c
