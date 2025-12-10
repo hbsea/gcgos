@@ -3,14 +3,49 @@
 #include "defs.h"
 #include "param.h"
 #include "fd.h"
+#include "memlayout.h"
 
-// int fetchint() { return 1; }
-int fetcharg()
+int argraw(int n)
 {
     struct proc* p = curproc[cpuid()];
-    printf("user page table:%p\n", p->pagetable);
-    return 0;
+    switch (n)
+    {
+        case 0:
+            return p->tf->x0;
+        case 1:
+            return p->tf->x1;
+        case 2:
+            return p->tf->x2;
+        case 3:
+            return p->tf->x3;
+        case 4:
+            return p->tf->x4;
+        case 5:
+            return p->tf->x5;
+        case 6:
+            return p->tf->x6;
+        case 7:
+            return p->tf->x7;
+    }
+    return -1;
 }
+void argfd(int n, int* ip) { *ip = argraw(n); }
+void argaddr(int n, uint64* ip, int max)
+{
+    uint64 uva = argraw(n);
+    uint64 va0 = PGROUNDDOWN(uva);
+    struct proc* p = curproc[cpuid()];
+    uint64 pa = walkaddr(p->pagetable, va0);
+    uint64* argaddr = (uint64*)(pa + uva - va0);
+
+    char* d = (char*)ip;
+    char* s = (char*)argaddr;
+    while (max-- > 0)
+    {
+        *d++ = *s++;
+    }
+}
+void argint(int n, int* ip) { *ip = argraw(n); }
 
 int sys_fork(void)
 {
@@ -70,7 +105,7 @@ int sys_wait(void)
 
 int sys_cons_putc()
 {
-    uint64 arg1 = curproc[cpuid()]->tf->x0;
+    uint64 arg1 = argraw(0);
     consputc(arg1);
     return 0;
 }
@@ -85,17 +120,40 @@ int sys_pipe()
     p->fds[f1] = rfd;
     f2 = fd_ualloc();
     p->fds[f2] = wfd;
+
+    uint64 uva = argraw(0);
+    uint64 va0 = PGROUNDDOWN(uva);
+    uint64 pa = walkaddr(p->pagetable, va0);
+    int* fdp = (int*)(pa + uva - va0);
+    fdp[0] = 0;
+    fdp[1] = 1;
+
     return 0;
 }
 int sys_write()
 {
+    int fd, n;
+    uint64 addr;
+    argfd(0, &fd);
+    argint(2, &n);
+    argaddr(1, &addr, n);
     struct proc* p = curproc[cpuid()];
-    fetcharg();
-    if (p->fds[p->tf->x0]->type == FD_PIPE) pipe_write();
 
+    return fd_write(p->fds[fd], addr, n);
+}
+int sys_read()
+{
+    int fd, n;
+    argfd(0, &fd);
+    argint(2, &n);
+    struct proc* p = curproc[cpuid()];
+    uint64 uva = argraw(1);
+    uint64 va0 = PGROUNDDOWN(uva);
+    uint64 pa = walkaddr(p->pagetable, va0);
+    uint64 buf = (uint64)(pa + uva - va0);
+    if (p->fds[fd]->type == FD_PIPE) fd_read(p->fds[fd], buf, n);
     return 0;
 }
-int sys_read() { return 0; }
 void syscall(void)
 {
     int call_num = curproc[cpuid()]->tf->x8;

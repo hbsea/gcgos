@@ -1,7 +1,10 @@
 int fork()
 {
+    unsigned long x;
     asm volatile("mov x8,#0x1");
     asm volatile("svc #0");
+    asm volatile("mov %0,x0" : "=r"(x));
+    return x;
 }
 void cons_putc(int c)
 {
@@ -24,5 +27,10 @@ int pipe(int fd[])
 int write(int fd, char* buf, int n)
 {
     asm volatile("mov x8,#6");
+    asm volatile("svc #0");
+}
+int read(int fd, char* buf, int size)
+{
+    asm volatile("mov x8,#7");
     asm volatile("svc #0");
 }

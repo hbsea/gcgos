@@ -63,20 +63,20 @@ void kvminithart()
     printf("enabled mmu\n");
 }
 
-pte_t *walk(pagetable_t pagetable, uint64 va, int alloc)
+pte_t* walk(pagetable_t pagetable, uint64 va, int alloc)
 {
     if (va >= MAXVA) panic("walk");
 
     for (int level = 2; level > 0; level--)
     {
-        pte_t *pte = &pagetable[PX(level, va)];
+        pte_t* pte = &pagetable[PX(level, va)];
         if ((*pte & PTE_VALID) && (*pte & PTE_TABLE))
         {
             pagetable = (pagetable_t)PTE2PA(*pte);
         }
         else
         {
-            if (!alloc || (pagetable = (pte_t *)kalloc()) == 0) return 0;
+            if (!alloc || (pagetable = (pte_t*)kalloc()) == 0) return 0;
             *pte = PA2PTE(pagetable) | PTE_VALID | PTE_TABLE;
         }
     }
@@ -87,7 +87,7 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 pa, uint64 size,
              uint64 perm)
 {
     uint64 a, last;
-    pte_t *pte;
+    pte_t* pte;
     if ((va % PGSIZE) != 0) panic("mappages: va not aligned");
 
     // 要在ld中4k对齐
@@ -107,6 +107,12 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 pa, uint64 size,
         pa += PGSIZE;
     }
     return 0;
+}
+uint64 walkaddr(pagetable_t pagetable, uint64 va)
+{
+    uint64* pte = walk(pagetable, va, 0);
+    uint64 pa = PTE2PA(*pte);
+    return pa;
 }
 
 pagetable_t uvmcreat()

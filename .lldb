@@ -8,4 +8,5 @@ b sys_write
 b sys_pipe
 b w_elr_el1
 b get_entry
+b fetcharg
 c

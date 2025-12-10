@@ -5,9 +5,6 @@
 #include "defs.h"
 #include "memlayout.h"
 
-extern char _binary_build_user_user1_start[];
-extern char _binary_build_user_user1_size[];
-
 extern char userret[];
 extern char trampoline[];
 extern char end[];
@@ -103,8 +100,6 @@ void forkret(void)
     if (first)
     {
         first = 0;
-        printf("_binary_user1_bin_size:%p;_binary_user1_bin_start:%p\n",
-               _binary_build_user_user1_size, _binary_build_user_user1_start);
         get_entry();
         // uint64 upsize =
         //     PGROUNDUP((uint64)_binary_build_user_user1_size) + PGSIZE;

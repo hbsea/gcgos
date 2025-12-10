@@ -35,17 +35,27 @@ opps:
     return -1;
 }
 
-void pipe_write()
+int pipe_write(struct fd* fd, uint64 addr, int n)
 {
     struct proc* p = curproc[cpuid()];
     printf("curproc: %p\n", p);
-
-    int n = p->tf->x2;
-    char* s = "xyz";
-    // char* s = (char*)p->tf->x1;
+    char* s = (char*)&addr;
     for (int i = 0; i < n; i++)
     {
-        p->fds[0]->pipe->data[p->fds[0]->pipe->writep] = s[i];
-        p->fds[0]->pipe->writep = p->fds[0]->pipe->writep + 1;
+        fd->pipe->data[fd->pipe->writep] = (s[i]);
+        fd->pipe->writep = fd->pipe->writep + 1;
     }
+    return 0;
+}
+
+int pipe_read(struct fd* fd, uint64 buf, int n)
+{
+    struct proc* p = curproc[cpuid()];
+    char* s = (char*)buf;
+    for (int i = 0; i < n; i++)
+    {
+        s[i] = fd->pipe->data[fd->pipe->readp];
+        fd->pipe->readp = fd->pipe->readp + 1;
+    }
+    return -1;
 }

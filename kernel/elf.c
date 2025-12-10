@@ -13,7 +13,6 @@ uint64 get_entry()
     printf("bin start:%p\n", _binary_build_user_user1_start);
     printf("uelf:%p,magic:%p\n", uelf, uelf->magic);
     if (uelf->magic != ELF_MAGIC)
-
     {
         panic("not a elf format");
     }
@@ -25,16 +24,15 @@ uint64 get_entry()
             (struct Proghdr*)(_binary_build_user_user1_start + uelf->phoff) + i;
         uint64* ucd = (uint64*)(_binary_build_user_user1_start +
                                 i * uelf->phentsize + ph->off);
-        for (int s = 0; s < ph->memsz; s++)
+        for (int s = 0; s < ph->filesz; s++)
         {
             pa[ph->vaddr + s] = ucd[s];
         }
     }
-    // uint64 addr = PGROUNDUP(ph->vaddr) + PGSIZE;
-    mappages(curproc[cpuid()]->pagetable, ph->vaddr, (uint64)pa, PGSIZE,
+    mappages(curproc[cpuid()]->pagetable, uelf->entry, (uint64)pa, PGSIZE,
              PTE_AP_RW);
-    curproc[cpuid()]->tf->elr_el1 = ph->vaddr;
-    curproc[cpuid()]->tf->sp_el0 = ph->vaddr + PGSIZE;
+    curproc[cpuid()]->tf->elr_el1 = uelf->entry;
+    curproc[cpuid()]->tf->sp_el0 = PGSIZE;
 
     return -1;
 }

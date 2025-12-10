@@ -22,6 +22,7 @@ void kvminithart(void);
 void kvmmap(pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 sz, uint64 perm);
 int mappages(pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 size,
              uint64 perm);
+uint64 walkaddr(pagetable_t pagetable, uint64 va);
 pagetable_t uvmcreat(void);
 
 // mmu.S
@@ -67,10 +68,13 @@ void timerinit(void);
 struct pipe;
 struct fd;
 int pipe_alloc(struct fd**, struct fd**);
-void pipe_write();
+int pipe_write(struct fd* fd, uint64 addr, int n);
+int pipe_read(struct fd* fd, uint64 buf, int n);
 
 // fd.c
 int fd_ualloc();
 struct fd* fd_alloc();
+int fd_write(struct fd* fd, uint64 addr, int n);
+int fd_read(struct fd* fd, uint64 buf, int n);
 
 uint64 get_entry();

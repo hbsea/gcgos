@@ -30,3 +30,14 @@ struct fd* fd_alloc()
     }
     return 0;
 }
+
+int fd_write(struct fd* fd, uint64 addr, int n)
+{
+    if (fd->type == FD_PIPE) return pipe_write(fd, addr, n);
+    return -1;
+}
+int fd_read(struct fd* fd, uint64 buf, int n)
+{
+    if (fd->type == FD_PIPE) return pipe_read(fd, buf, n);
+    return -1;
+}
