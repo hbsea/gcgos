@@ -17,11 +17,11 @@ static void printint(long long xx, int base, int sign)
     do
     {
         buf[i++] = digits[x % base];
-    } while ((x /= base) != 0); // 打印10会显示-0000000000000000000000000，原因是写成：while((x/base)!=0)
-    if (sign)
-        buf[i++] = '-';
-    while (--i >= 0)
-        consputc(buf[i]);
+    } while (
+        (x /= base) !=
+        0);  // 打印10会显示-0000000000000000000000000，原因是写成：while((x/base)!=0)
+    if (sign) buf[i++] = '-';
+    while (--i >= 0) consputc(buf[i]);
 }
 static void printptr(uint64 x)
 {
@@ -34,14 +34,18 @@ static void printptr(uint64 x)
 }
 
 // va_list是c内建的，保存“当前正在遍历到哪个可变参数”的状态
-// va_start(ap, last_named_param)初始化 ap，让它指向紧跟在最后一个具名形参后的第一个可变参数。必须在使用 ap 之前调用，且第二个参数必须是函数里最后一个具名形参的标识符。
-// 读va_arg(ap, type)取下一个可变参数，并把 ap 向后推进,你必须告诉它要读取的类型（这点非常重要，错了就是未定义行为）。
-// Print to the console.
-int printf(char *fmt, ...)
+// va_start(ap, last_named_param)初始化
+// ap，让它指向紧跟在最后一个具名形参后的第一个可变参数。必须在使用 ap
+// 之前调用，且第二个参数必须是函数里最后一个具名形参的标识符。 读va_arg(ap,
+// type)取下一个可变参数，并把 ap
+// 向后推进,你必须告诉它要读取的类型（这点非常重要，错了就是未定义行为）。 Print
+// to the console.
+int printf(char* fmt, ...)
 {
+    // acquire_spinlock(&kernel_lock);
     va_list ap;
     int i, cx, c0, c1, c2;
-    char *s;
+    char* s;
 
     va_start(ap, fmt);
     for (i = 0; (cx = fmt[i] & 0xff) != 0; i++)
@@ -54,10 +58,8 @@ int printf(char *fmt, ...)
         i++;
         c0 = fmt[i + 0] & 0xff;
         c1 = c2 = 0;
-        if (c0)
-            c1 = fmt[i + 1] & 0xff;
-        if (c1)
-            c2 = fmt[i + 2] & 0xff;
+        if (c0) c1 = fmt[i + 1] & 0xff;
+        if (c1) c2 = fmt[i + 2] & 0xff;
         if (c0 == 'd')
         {
             printint(va_arg(ap, int), 10, 1);
@@ -90,7 +92,7 @@ int printf(char *fmt, ...)
             printint(va_arg(ap, uint64), 10, 0);
             i += 2;
         }
-        else if (c0 == 'x')
+        else if (c0 == 'x' || c0 == 'p')
         {
             printint(va_arg(ap, uint32), 16, 0);
         }
@@ -114,10 +116,8 @@ int printf(char *fmt, ...)
         }
         else if (c0 == 's')
         {
-            if ((s = va_arg(ap, char *)) == 0)
-                s = "(null)";
-            for (; *s; s++)
-                consputc(*s);
+            if ((s = va_arg(ap, char*)) == 0) s = "(null)";
+            for (; *s; s++) consputc(*s);
         }
         else if (c0 == '%')
         {
@@ -136,12 +136,12 @@ int printf(char *fmt, ...)
     }
     va_end(ap);
 
+    // release_spinlock(&kernel_lock);
     return 0;
 }
 
-void panic(char *s)
-{    
+void panic(char* s)
+{
     printf("panic:  %s\n", s);
-    while (1)
-        asm volatile("wfi");
+    while (1) asm volatile("wfi");
 }

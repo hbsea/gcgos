@@ -23,16 +23,19 @@ void prepare_return(void)
     // curproc->pid, curproc->tf, curproc->tf->sp_el0, curproc->tf->elr_el1,
     // curproc->pagetable);
 
-    curproc[cpuid()]->tf->kernel_ttbr = r_ttbr0_el1();
-    curproc[cpuid()]->tf->kernel_sp = curproc[cpuid()]->kstack + PGSIZE;
+    struct proc* p = myproc();
+
+    p->tf->kernel_ttbr = r_ttbr0_el1();
+    p->tf->kernel_sp = p->kstack + PGSIZE;
     // printf("curproc->tf->kernel_sp:%p\n", (void *)curproc->tf->kernel_sp);
     uint64 trampoline_uservec = TRAMPOLINE + (uservec - trampoline);
 
     w_vbar_el1(trampoline_uservec);
 
+    // daif = pstate[9:6] saved program status register
     w_spsr_el1((0b101 << 6) | SPSR_EL0);
-    w_sp_el0(curproc[cpuid()]->tf->sp_el0);
-    w_elr_el1(curproc[cpuid()]->tf->elr_el1);
+    w_sp_el0(p->tf->sp_el0);
+    w_elr_el1(p->tf->elr_el1);
 }
 
 void trapinit(void) {}
@@ -84,6 +87,11 @@ void kerneltrap(int type)
             panic("unhandled kernel irq");
         }
     }
+    else
+    {
+        printf("unexpected interrupt type=%d\n", type);
+        panic("unhandled kernel irq");
+    }
 
     // printf("r_esr_el1: %b\n", ((r_esr_el1())>>26 & 0x3F));
 }
@@ -94,8 +102,9 @@ uint64 usertrap(int type)
 
     w_vbar_el1((uint64)kernelvec);
 
-    curproc[cpuid()]->tf->elr_el1 = r_elr_el1();
-    curproc[cpuid()]->tf->sp_el0 = r_sp_el0();
+    struct proc* p = myproc();
+    p->tf->elr_el1 = r_elr_el1();
+    p->tf->sp_el0 = r_sp_el0();
 
     if (type == 8)
     {
@@ -107,8 +116,7 @@ uint64 usertrap(int type)
         printf(
             "curproc addr:%p proc[0]:%p proc[1]:%p curproc id:%d ser trap "
             "ec:%b call_num=%d\n",
-            curproc[cpuid()], &proc[0], &proc[1], curproc[cpuid()]->pid, ec,
-            curproc[cpuid()]->tf->x8);
+            p, &proc[0], &proc[1], p->pid, ec, p->tf->x8);
         switch (ec)
         {
             case 0b010101:
@@ -145,7 +153,7 @@ uint64 usertrap(int type)
             w_cntp_cval_el0(cnt + interval);
 
             gicc->GICC_EOIR = id;
-            sched();
+            // scheduler();
         }
         else
         {
@@ -155,7 +163,7 @@ uint64 usertrap(int type)
     }
 
     prepare_return();
-    return (uint64)curproc[cpuid()]->pagetable;
+    return (uint64)p->pagetable;
 }
 
 int devintr() {}
@@ -176,12 +184,12 @@ const char* entry_error_messages[] = {
 void show_invalid_entry_message(uint64 TF, int type, uint64 esr, uint64 address,
                                 uint64 syscall_num)
 {
+    struct proc* p = myproc();
     printf(
         "curprocPid:%d TRAPFRAMEAdress:%p type:%s  ESR[EC]: %b  address: %x, "
-        "syscall_num:%d C-TF:%p curproc->tf->x8:%p",
-        curproc[cpuid()]->pid, TF, entry_error_messages[type],
-        ((esr >> 26) & 0x3f), address, syscall_num, curproc[cpuid()]->tf,
-        curproc[cpuid()]->tf->x8);
+        "syscall_num:%d C-TF:%p curproc->tf->x8:%p\n",
+        p->pid, TF, entry_error_messages[type], ((esr >> 26) & 0x3f), address,
+        syscall_num, p->tf, p->tf->x8);
     debug();
     // panic("trap message");
 }

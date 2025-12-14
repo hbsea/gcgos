@@ -12,7 +12,8 @@ extern void forkret(void);
 
 struct proc proc[NPROC];
 int nextpid = 1;
-struct proc* curproc[NCPU];
+struct proc* initproc;
+struct cpu cpus[NCPU];
 
 void proc_mapstacks(pagetable_t kpgtbl)
 {
@@ -43,7 +44,19 @@ int cpuid(void)
     int id = r_mpidr_el1();
     return id;
 }
+struct cpu* mycpu(void)
+{
+    int id = cpuid();
+    struct cpu* c = &cpus[id];
+    return c;
+}
 
+struct proc* myproc(void)
+{
+    struct cpu* c = mycpu();
+    struct proc* p = c->proc;
+    return p;
+}
 int allocpid(void)
 {
     int pid;
@@ -75,7 +88,6 @@ struct proc* allocproc(void)
         if (p->state == UNUSED)
         {
             p->pid = allocpid();
-            p->state = RUNNABLE;
             p->pagetable = proc_pagetable(p);
             return p;
         }
@@ -87,15 +99,16 @@ void userinit(void)
 {
     struct proc* p;
     p = allocproc();
-    curproc[cpuid()] = p;
-    printf("curproc TF:%p\n", curproc[cpuid()]->tf);
-    debug();
+    initproc = p;
     p->ctx.sp = (uint64)(p->kstack + PGSIZE);
     p->ctx.x30 = (uint64)forkret;
+    p->state = RUNNABLE;
+    printf("endofuserinit\n");
 }
 
 void forkret(void)
 {
+    struct proc* p = myproc();
     static int first = 1;
     if (first)
     {
@@ -117,8 +130,7 @@ void forkret(void)
     prepare_return();
 
     uint64 trampoline_userret = TRAMPOLINE + (userret - trampoline);
-    ((void (*)(uint64))trampoline_userret)(
-        (uint64)(curproc[cpuid()]->pagetable));
+    ((void (*)(uint64))trampoline_userret)((uint64)(p->pagetable));
 
     // asm volatile("eret");
 }
@@ -126,8 +138,9 @@ void forkret(void)
 struct proc* newproc(void)
 {
     struct proc* np;
+    struct proc* cp;
     np = allocproc();
-    np->ppid = curproc[cpuid()]->pid;
+    np->ppid = cp->pid;
     np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
     np->ctx.x30 = (uint64)forkret;
     np->tf->x0 = 0;  // so fork() returns 0 in child
@@ -147,11 +160,11 @@ struct proc* newproc(void)
 
 void sleep(void* chan)
 {
-    curproc[cpuid()]->chan = chan;
-    curproc[cpuid()]->state = WAITING;
-    printf("sleeping curproc pid:%d state:%d\n", curproc[cpuid()]->pid,
-           curproc[cpuid()]->state);
-    sched();
+    struct proc* p = myproc();
+    p->chan = chan;
+    p->state = WAITING;
+    printf("sleeping curproc pid:%d state:%d\n", p->pid, p->state);
+    scheduler();
 }
 void wakeup(void* chan)
 {
@@ -160,52 +173,31 @@ void wakeup(void* chan)
         for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
 }
 
-void sched()
+void scheduler()
 {
-    // intr_off();
-    struct proc *np, *cp;
-    static int first = 1;
-
-    cp = curproc[cpuid()];
+    struct proc* p;
+    struct cpu* c = mycpu();
+    c->proc = 0;
     while (1)
     {
-        for (np = curproc[cpuid()] + 1; np != curproc[cpuid()]; np++)
+        intr_on();
+        intr_off();
+        int found = 0;
+        for (p = proc; p < &proc[NPROC]; p++)
         {
-            if (np == &proc[NPROC])
+            acquire_spinlock(&kernel_lock);
+            if (p->state == RUNNABLE)
             {
-                printf("NO PROC IS RUNNING\n");
-                np = &proc[0];
+                p->state = RUNNING;
+                c->proc = p;
+                swtch(&c->contex, &p->ctx);
+                c->proc = 0;
+                found = 1;
             }
-            if (np->state == RUNNABLE) break;
+            release_spinlock(&kernel_lock);
         }
-        if (np->state == RUNNABLE) break;
+        if (found == 0) asm volatile("wfi");
     }
-
-    // write_gicd_sgir();
-
-    // if (cp == np)
-    if (first)
-    {
-        first = 0;
-        printf("cp pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n",
-               cp->pid, cp->ctx.x30, cp->tf->sp_el0);
-
-        debug();
-
-        asm volatile("mov x30,%0" ::"r"(cp->ctx.x30));
-        asm volatile("mov sp,%0" ::"r"(cp->ctx.sp));
-        asm volatile("ret");
-    }
-
-    printf("old pid:%d curproc->ctx.x30: %p curproc->tf->sp_el0:%p \n", cp->pid,
-           cp->ctx.x30, cp->tf->sp_el0);
-    curproc[cpuid()] = np;
-    printf("c:%p np:%p\n", cp, np);
-    printf(
-        "swtch : curproc pid:%d pagetable:%p kstack:%p new proc pid: %d "
-        "curproc->ctx.x30:%p curproc->ctx.sp:%p\n",
-        curproc[cpuid()]->pid, curproc[cpuid()]->pagetable,
-        curproc[cpuid()]->kstack, curproc[cpuid()]->pid,
-        curproc[cpuid()]->ctx.x30, curproc[cpuid()]->ctx.sp);
-    swtch(&cp->ctx, &np->ctx);
 }
+
+void sched(void);

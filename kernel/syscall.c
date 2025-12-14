@@ -7,7 +7,7 @@
 
 int argraw(int n)
 {
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     switch (n)
     {
         case 0:
@@ -34,7 +34,7 @@ void argaddr(int n, uint64* ip, int max)
 {
     uint64 uva = argraw(n);
     uint64 va0 = PGROUNDDOWN(uva);
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     uint64 pa = walkaddr(p->pagetable, va0);
     uint64* argaddr = (uint64*)(pa + uva - va0);
 
@@ -58,48 +58,49 @@ int sys_fork(void)
 int sys_exit(void)
 {
     struct proc* p;
+    struct proc* cp = myproc();
 
-    curproc[cpuid()]->state = ZOMBIE;
+    cp->state = ZOMBIE;
 
     // wakeup parent
     for (p = proc; p < &proc[NPROC]; p++)
-        if (p->pid == curproc[cpuid()]->ppid) wakeup(p);
+        if (p->pid == cp->ppid) wakeup(p);
 
     // abandon children
     for (p = proc; p < &proc[NPROC]; p++)
-        if (p->ppid == curproc[cpuid()]->pid) p->pid = 1;
+        if (p->ppid == cp->pid) p->pid = 1;
 
-    sched();
+    scheduler();
     return 0;
 }
 
 int sys_wait(void)
 {
     struct proc* p;
+    struct proc* cp = myproc();
     int any, pid;
-    printf("wait pid :%d ppid:%d \n", curproc[cpuid()]->pid,
-           curproc[cpuid()]->ppid);
+    printf("wait pid :%d ppid:%d \n", cp->pid, cp->ppid);
     while (1)
     {
         any = 0;
         for (p = proc; p < &proc[NPROC]; p++)
         {
-            if (p->state == ZOMBIE && p->ppid == curproc[cpuid()]->pid)
+            if (p->state == ZOMBIE && p->ppid == cp->pid)
             {
                 kfree(p->tf);
                 kfree(p->pagetable);
                 p->state = UNUSED;
-                printf("%x collected %x \n", curproc[cpuid()], p);
+                printf("%x collected %x \n", cp, p);
                 return pid;
             }
         }
-        if (p->state != UNUSED && p->ppid == curproc[cpuid()]->pid) any = 1;
+        if (p->state != UNUSED && p->ppid == cp->pid) any = 1;
         if (any == 0)
         {
-            printf("nothing to wait for\n", curproc[cpuid()]);
+            printf("nothing to wait for\n", cp);
             return -1;
         }
-        sleep(curproc[cpuid()]);
+        sleep(cp);
     }
 }
 
@@ -114,7 +115,7 @@ int sys_pipe()
 {
     struct fd *rfd = 0, *wfd = 0;
     int f1 = -1, f2 = -1;
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     pipe_alloc(&rfd, &wfd);
     f1 = fd_ualloc();
     p->fds[f1] = rfd;
@@ -137,7 +138,7 @@ int sys_write()
     argfd(0, &fd);
     argint(2, &n);
     argaddr(1, &addr, n);
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
 
     return fd_write(p->fds[fd], addr, n);
 }
@@ -146,7 +147,7 @@ int sys_read()
     int fd, n;
     argfd(0, &fd);
     argint(2, &n);
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     uint64 uva = argraw(1);
     uint64 va0 = PGROUNDDOWN(uva);
     uint64 pa = walkaddr(p->pagetable, va0);
@@ -156,7 +157,8 @@ int sys_read()
 }
 void syscall(void)
 {
-    int call_num = curproc[cpuid()]->tf->x8;
+    struct proc* cp = myproc();
+    int call_num = cp->tf->x8;
     // printf("curproc->pid:%d call_num:%d\n", curproc->pid, curproc->tf->x8);
     int ret = -1;
     switch (call_num)
@@ -186,5 +188,5 @@ void syscall(void)
             printf("Unknown sys call %d\n", call_num);
             break;
     }
-    curproc[cpuid()]->tf->x0 = ret;
+    cp->tf->x0 = ret;
 }

@@ -37,7 +37,7 @@ opps:
 
 int pipe_write(struct fd* fd, uint64 addr, int n)
 {
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     printf("curproc: %p\n", p);
     char* s = (char*)&addr;
     for (int i = 0; i < n; i++)
@@ -50,7 +50,7 @@ int pipe_write(struct fd* fd, uint64 addr, int n)
 
 int pipe_read(struct fd* fd, uint64 buf, int n)
 {
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     char* s = (char*)buf;
     for (int i = 0; i < n; i++)
     {

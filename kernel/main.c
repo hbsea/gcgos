@@ -8,6 +8,7 @@
 #include "param.h"
 
 volatile static int started = 0;
+// uint32 kernel_lock = -1;
 
 int kernel_main()
 {
@@ -22,10 +23,9 @@ int kernel_main()
         procinit();
         trapinit();
         trapinithart();
-        // sys_fork();
         gic_init();
         pl011_uart_ie();
-        // timerinit();
+        timerinit();
         userinit();
 
         __sync_synchronize();
@@ -35,14 +35,14 @@ int kernel_main()
     {
         while (started == 0);
         __sync_synchronize();
-        kvminithart();
         printf("cpuid %d starting\n", cpuid());
-        trapinit();
+        kvminithart();
+        trapinithart();
         gic_init();
-        // timerinit();
+        // pl011_uart_ie();
+        timerinit();
     }
 
-    // printf("entry addr:%p\n", get_entry());
-    sched();
+    scheduler();
     return 0;
 }

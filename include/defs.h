@@ -33,9 +33,11 @@ extern void enable_mmu(uint64 ttbr0_el1, uint64 ttbr1_el1, uint64 tcr_el1,
 void proc_mapstacks(pagetable_t);
 void procinit(void);
 int cpuid(void);
+struct cpu* mycpu(void);
+struct proc* myproc(void);
 void userinit(void);
 struct proc* newproc(void);
-void sched(void);
+void scheduler(void);
 void sleep(void* chan);
 void wakeup(void* chan);
 
@@ -78,3 +80,8 @@ int fd_write(struct fd* fd, uint64 addr, int n);
 int fd_read(struct fd* fd, uint64 buf, int n);
 
 uint64 get_entry();
+
+// spinlock.c
+extern int kernel_lock;
+void acquire_spinlock(int* lock);
+void release_spinlock(int* lock);

@@ -21,6 +21,12 @@ struct context
     uint64 x29;
     uint64 x30;
 };
+struct cpu
+{
+    struct proc* proc;
+    struct context contex;
+};
+extern struct cpu cpus[NCPU];
 
 struct trapframe
 {
@@ -71,7 +77,8 @@ struct proc
         UNUSED,
         RUNNABLE,
         WAITING,
-        ZOMBIE
+        ZOMBIE,
+        RUNNING
     } state;
     void* chan;
     pagetable_t pagetable;  // User page table
@@ -85,4 +92,4 @@ struct proc
 };
 
 extern struct proc proc[];
-extern struct proc* curproc[];
+extern struct proc* initproc;

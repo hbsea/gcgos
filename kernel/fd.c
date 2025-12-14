@@ -8,7 +8,7 @@ struct fd fds[NFD];
 int fd_ualloc()
 {
     int fd;
-    struct proc* p = curproc[cpuid()];
+    struct proc* p = myproc();
     for (fd = 0; fd < NOFILE; fd++)
     {
         if (p->fds[fd] == 0) return fd;

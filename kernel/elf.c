@@ -29,10 +29,10 @@ uint64 get_entry()
             pa[ph->vaddr + s] = ucd[s];
         }
     }
-    mappages(curproc[cpuid()]->pagetable, uelf->entry, (uint64)pa, PGSIZE,
-             PTE_AP_RW);
-    curproc[cpuid()]->tf->elr_el1 = uelf->entry;
-    curproc[cpuid()]->tf->sp_el0 = PGSIZE;
+
+    mappages(initproc->pagetable, uelf->entry, (uint64)pa, PGSIZE, PTE_AP_RW);
+    initproc->tf->elr_el1 = uelf->entry;
+    initproc->tf->sp_el0 = PGSIZE;
 
     return -1;
 }

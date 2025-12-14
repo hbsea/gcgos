@@ -12,5 +12,5 @@ void timerinit()
     uint64 interval = 30000000;
     w_cntp_cval_el0(cnt + interval);
     w_cntp_ctl_el0(0b01);
-    printf("TIMER enabled\n");
+    printf("cpu %d TIMER enabled\n", cpuid());
 }
