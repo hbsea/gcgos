@@ -33,11 +33,23 @@ struct fd* fd_alloc()
 
 int fd_write(struct fd* fd, uint64 addr, int n)
 {
-    if (fd->type == FD_PIPE) return pipe_write(fd, addr, n);
+    if (fd->type == FD_PIPE) return pipe_write(fd->pipe, addr, n);
     return -1;
 }
 int fd_read(struct fd* fd, uint64 buf, int n)
 {
-    if (fd->type == FD_PIPE) return pipe_read(fd, buf, n);
+    if (fd->type == FD_PIPE) return pipe_read(fd->pipe, buf, n);
     return -1;
+}
+void fd_close(struct fd* fd)
+{
+    fd->count -= 1;
+    if (fd->count == 0)
+    {
+        if (fd->type == FD_PIPE)
+        {
+            pipe_close(fd->pipe, fd->writeable);
+        }
+    }
+    fd->type = FD_CLOSE;
 }

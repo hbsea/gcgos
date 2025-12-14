@@ -172,6 +172,32 @@ void wakeup(void* chan)
     if (p->state == WAITING && p->chan == chan)
         for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
 }
+void proc_exit()
+{
+    struct proc* p;
+    struct proc* cp = myproc();
+
+    cp->state = ZOMBIE;
+    // close fd before exit
+    for (int fd; fd < NOFILE; fd++)
+    {
+        if (cp->fds[fd])
+        {
+            fd_close(cp->fds[fd]);
+            cp->fds[fd] = 0;
+        }
+    }
+
+    // wakeup parent
+    for (p = proc; p < &proc[NPROC]; p++)
+        if (p->pid == cp->ppid) wakeup(p);
+
+    // abandon children
+    for (p = proc; p < &proc[NPROC]; p++)
+        if (p->ppid == cp->pid) p->pid = 1;
+
+    sched();
+}
 
 void yield(void)
 {

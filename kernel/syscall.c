@@ -57,20 +57,7 @@ int sys_fork(void)
 
 int sys_exit(void)
 {
-    struct proc* p;
-    struct proc* cp = myproc();
-
-    cp->state = ZOMBIE;
-
-    // wakeup parent
-    for (p = proc; p < &proc[NPROC]; p++)
-        if (p->pid == cp->ppid) wakeup(p);
-
-    // abandon children
-    for (p = proc; p < &proc[NPROC]; p++)
-        if (p->ppid == cp->pid) p->pid = 1;
-
-    scheduler();
+    proc_exit();
     return 0;
 }
 
@@ -155,6 +142,31 @@ int sys_read()
     if (p->fds[fd]->type == FD_PIPE) fd_read(p->fds[fd], buf, n);
     return 0;
 }
+int sys_close()
+{
+    int fd;
+    struct proc* p = myproc();
+    argfd(0, &fd);
+    fd_close(p->fds[fd]);
+    p->fds[fd] = 0;
+    return 0;
+}
+int sys_kill()
+{
+    int pid;
+    struct proc* p;
+    argint(0, &pid);
+    for (p = proc; p < &proc[NPROC]; p++)
+    {
+        if (p->pid == pid && p->state != UNUSED)
+        {
+            p->killed = 1;
+            if (p->state == WAITING) p->state = RUNNABLE;
+            return 0;
+        }
+    }
+    return -1;
+};
 void syscall(void)
 {
     struct proc* cp = myproc();
@@ -183,6 +195,9 @@ void syscall(void)
             break;
         case SYS_read:
             ret = sys_read();
+            break;
+        case SYS_kill:
+            ret = sys_kill();
             break;
         default:
             printf("Unknown sys call %d\n", call_num);

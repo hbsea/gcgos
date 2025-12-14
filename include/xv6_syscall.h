@@ -5,3 +5,6 @@
 #define SYS_pip 5
 #define SYS_write 6
 #define SYS_read 7
+#define SYS_close 8
+#define SYS_block 9
+#define SYS_kill 10

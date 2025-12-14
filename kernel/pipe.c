@@ -20,6 +20,8 @@ int pipe_alloc(struct fd** fd1, struct fd** fd2)
     printf("fdtype:%d\n", (*fd1)->type);
     if ((*fd2 = fd_alloc()) == 0) goto opps;
     p = (struct pipe*)kalloc();
+    p->readopen = 1;
+    p->writeopen = 1;
     (*fd1)->type = FD_PIPE;
     (*fd1)->readable = 1;
     (*fd1)->writeable = 0;
@@ -35,27 +37,41 @@ opps:
     return -1;
 }
 
-int pipe_write(struct fd* fd, uint64 addr, int n)
+int pipe_write(struct pipe* p, uint64 addr, int n)
 {
-    struct proc* p = myproc();
-    printf("curproc: %p\n", p);
     char* s = (char*)&addr;
     for (int i = 0; i < n; i++)
     {
-        fd->pipe->data[fd->pipe->writep] = (s[i]);
-        fd->pipe->writep = fd->pipe->writep + 1;
+        p->data[p->writep] = (s[i]);
+        p->writep = p->writep + 1;
     }
     return 0;
 }
 
-int pipe_read(struct fd* fd, uint64 buf, int n)
+int pipe_read(struct pipe* p, uint64 buf, int n)
 {
-    struct proc* p = myproc();
     char* s = (char*)buf;
     for (int i = 0; i < n; i++)
     {
-        s[i] = fd->pipe->data[fd->pipe->readp];
-        fd->pipe->readp = fd->pipe->readp + 1;
+        s[i] = p->data[p->readp];
+        p->readp = p->readp + 1;
     }
     return -1;
+}
+void pipe_close(struct pipe* p, int writeable)
+{
+    if (writeable)
+    {
+        p->writeopen = 0;
+        wakeup(&p->readp);
+    }
+    else
+    {
+        p->readopen = 0;
+        wakeup(&p->writep);
+    }
+    if (p->readopen == 0 && p->writeopen == 0)
+    {
+        kfree(p);
+    }
 }

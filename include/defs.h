@@ -37,11 +37,12 @@ struct cpu* mycpu(void);
 struct proc* myproc(void);
 void userinit(void);
 struct proc* newproc(void);
-void scheduler(void);
-void sched();
 void yield(void);
 void sleep(void* chan);
 void wakeup(void* chan);
+void proc_exit(void);
+void scheduler(void);
+void sched();
 
 // trap.c
 void trapinit(void);
@@ -72,14 +73,16 @@ void timerinit(void);
 struct pipe;
 struct fd;
 int pipe_alloc(struct fd**, struct fd**);
-int pipe_write(struct fd* fd, uint64 addr, int n);
-int pipe_read(struct fd* fd, uint64 buf, int n);
+int pipe_write(struct pipe* p, uint64 addr, int n);
+int pipe_read(struct pipe* p, uint64 buf, int n);
+void pipe_close(struct pipe* p, int writeopen);
 
 // fd.c
 int fd_ualloc();
 struct fd* fd_alloc();
 int fd_write(struct fd* fd, uint64 addr, int n);
 int fd_read(struct fd* fd, uint64 buf, int n);
+void fd_close(struct fd* fd);
 
 uint64 get_entry();
 

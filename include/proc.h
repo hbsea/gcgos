@@ -80,7 +80,8 @@ struct proc
         ZOMBIE,
         RUNNING
     } state;
-    void* chan;
+    void* chan;  // sleep channel
+    int killed;
     pagetable_t pagetable;  // User page table
     uint64 sz;
     struct context ctx;
