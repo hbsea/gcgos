@@ -153,7 +153,7 @@ uint64 usertrap(int type)
             w_cntp_cval_el0(cnt + interval);
 
             gicc->GICC_EOIR = id;
-            // scheduler();
+            yield();
         }
         else
         {

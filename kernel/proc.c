@@ -173,6 +173,13 @@ void wakeup(void* chan)
         for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
 }
 
+void yield(void)
+{
+    struct proc* p = myproc();
+    p->state = RUNNABLE;
+    printf("called yield\n");
+    sched();
+}
 void scheduler()
 {
     struct proc* p;
@@ -200,4 +207,8 @@ void scheduler()
     }
 }
 
-void sched(void);
+void sched(void)
+{
+    struct proc* p = myproc();
+    swtch(&p->ctx, &mycpu()->contex);
+};

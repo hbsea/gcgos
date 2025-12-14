@@ -38,6 +38,8 @@ struct proc* myproc(void);
 void userinit(void);
 struct proc* newproc(void);
 void scheduler(void);
+void sched();
+void yield(void);
 void sleep(void* chan);
 void wakeup(void* chan);
 
