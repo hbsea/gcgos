@@ -1,9 +1,8 @@
-#include "param.h"
-#include "defs.h"
-#include "arm.h"
-#include "defs.h"
-#include "memlayout.h"
 #include "proc.h"
+#include "defs.h"
+#include "param.h"
+#include "memlayout.h"
+#include "arm.h"
 
 extern char userret[];
 extern char trampoline[];
@@ -162,15 +161,38 @@ void sleep(void* chan)
 {
     struct proc* p = myproc();
     p->chan = chan;
-    p->state = WAITING;
+    p->state = SLEEPING;
     printf("sleeping curproc pid:%d state:%d\n", p->pid, p->state);
     scheduler();
 }
-void wakeup(void* chan)
+int proc_wait(void)
 {
     struct proc* p;
-    if (p->state == WAITING && p->chan == chan)
-        for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
+    struct proc* cp = myproc();
+    int any, pid;
+    printf("wait pid :%d ppid:%d \n", cp->pid, cp->ppid);
+    while (1)
+    {
+        any = 0;
+        for (p = proc; p < &proc[NPROC]; p++)
+        {
+            if (p->state == ZOMBIE && p->ppid == cp->pid)
+            {
+                kfree(p->tf);
+                kfree(p->pagetable);
+                p->state = UNUSED;
+                printf("%x collected %x \n", cp, p);
+                return pid;
+            }
+        }
+        if (p->state != UNUSED && p->ppid == cp->pid) any = 1;
+        if (any == 0)
+        {
+            printf("nothing to wait for\n", cp);
+            return -1;
+        }
+        sleep(cp);
+    }
 }
 void proc_exit()
 {
@@ -197,6 +219,28 @@ void proc_exit()
         if (p->ppid == cp->pid) p->pid = 1;
 
     sched();
+}
+
+int proc_kill(int pid)
+{
+    struct proc* p;
+    for (p = proc; p < &proc[NPROC]; p++)
+    {
+        if (p->pid == pid && p->state != UNUSED)
+        {
+            p->killed = 1;
+            if (p->state == SLEEPING) p->state = RUNNABLE;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+void wakeup(void* chan)
+{
+    struct proc* p;
+    if (p->state == SLEEPING && p->chan == chan)
+        for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
 }
 
 void yield(void)

@@ -1,3 +1,5 @@
+#pragma once
+#include "defs.h"
 struct spinlock
 {
     uint32 locked;

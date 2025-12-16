@@ -61,44 +61,16 @@ int sys_exit(void)
     return 0;
 }
 
-int sys_wait(void)
-{
-    struct proc* p;
-    struct proc* cp = myproc();
-    int any, pid;
-    printf("wait pid :%d ppid:%d \n", cp->pid, cp->ppid);
-    while (1)
-    {
-        any = 0;
-        for (p = proc; p < &proc[NPROC]; p++)
-        {
-            if (p->state == ZOMBIE && p->ppid == cp->pid)
-            {
-                kfree(p->tf);
-                kfree(p->pagetable);
-                p->state = UNUSED;
-                printf("%x collected %x \n", cp, p);
-                return pid;
-            }
-        }
-        if (p->state != UNUSED && p->ppid == cp->pid) any = 1;
-        if (any == 0)
-        {
-            printf("nothing to wait for\n", cp);
-            return -1;
-        }
-        sleep(cp);
-    }
-}
+int sys_wait(void) { return proc_wait(); }
 
-int sys_cons_putc()
+int sys_cons_putc(void)
 {
     uint64 arg1 = argraw(0);
     consputc(arg1);
     return 0;
 }
 
-int sys_pipe()
+int sys_pipe(void)
 {
     struct fd *rfd = 0, *wfd = 0;
     int f1 = -1, f2 = -1;
@@ -118,7 +90,7 @@ int sys_pipe()
 
     return 0;
 }
-int sys_write()
+int sys_write(void)
 {
     int fd, n;
     uint64 addr;
@@ -129,7 +101,7 @@ int sys_write()
 
     return fd_write(p->fds[fd], addr, n);
 }
-int sys_read()
+int sys_read(void)
 {
     int fd, n;
     argfd(0, &fd);
@@ -142,7 +114,7 @@ int sys_read()
     if (p->fds[fd]->type == FD_PIPE) fd_read(p->fds[fd], buf, n);
     return 0;
 }
-int sys_close()
+int sys_close(void)
 {
     int fd;
     struct proc* p = myproc();
@@ -151,21 +123,12 @@ int sys_close()
     p->fds[fd] = 0;
     return 0;
 }
-int sys_kill()
+int sys_kill(void)
 {
     int pid;
-    struct proc* p;
     argint(0, &pid);
-    for (p = proc; p < &proc[NPROC]; p++)
-    {
-        if (p->pid == pid && p->state != UNUSED)
-        {
-            p->killed = 1;
-            if (p->state == WAITING) p->state = RUNNABLE;
-            return 0;
-        }
-    }
-    return -1;
+    proc_kill(pid);
+    return 0;
 };
 void syscall(void)
 {

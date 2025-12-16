@@ -1,6 +1,5 @@
 #include "types.h"
 #include "arm.h"
-#include "spinlock.h"
 #include "defs.h"
 
 void acquire(struct spinlock* lk)

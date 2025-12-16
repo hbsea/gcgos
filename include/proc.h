@@ -78,7 +78,7 @@ struct proc
     {
         UNUSED,
         RUNNABLE,
-        WAITING,
+        SLEEPING,
         ZOMBIE,
         RUNNING
     } state;

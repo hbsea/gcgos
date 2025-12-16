@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include "arm.h"
+#include "spinlock.h"
 
 // console.c
 void consoleinit(void);
@@ -40,7 +41,9 @@ struct proc* newproc(void);
 void yield(void);
 void sleep(void* chan);
 void wakeup(void* chan);
+int proc_wait(void);
 void proc_exit(void);
+int proc_kill(int pid);
 void scheduler(void);
 void sched();
 
@@ -64,6 +67,7 @@ void uproc1();
 void uproc2();
 
 // swtch.S
+struct context;
 void swtch(struct context*, struct context*);
 
 // timer.c
