@@ -87,6 +87,5 @@ void fd_close(struct fd* fd);
 uint64 get_entry();
 
 // spinlock.c
-extern int kernel_lock;
-void acquire_spinlock(int* lock);
-void release_spinlock(int* lock);
+void acquire(struct spinlock* lk);
+void release(struct spinlock* lk);

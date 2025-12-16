@@ -1,6 +1,7 @@
 #include "types.h"
 #include "arm.h"
 #include "param.h"
+#include "spinlock.h"
 struct context
 {
     uint64 sp;
@@ -70,6 +71,7 @@ struct trapframe
 
 struct proc
 {
+    struct spinlock lock;
     int pid;
     int ppid;
     enum

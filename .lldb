@@ -10,4 +10,5 @@ gdb-remote 1234
 # b get_entry
 # b scheduler
 # b userinit
+# b release
 c

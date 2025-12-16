@@ -18,6 +18,10 @@ int main()
         puts(buf);
     }
 
-    while (1);
+    while (1)
+    {
+        // for (int i; i < 100000000; i++);
+        // puts("&");
+    };
     return 0;
 }

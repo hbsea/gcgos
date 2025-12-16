@@ -1,36 +1,24 @@
 #include "types.h"
-#include "defs.h"
 #include "arm.h"
-#define LOCK_FREE -1
+#include "spinlock.h"
+#include "defs.h"
 
-int kernel_lock = LOCK_FREE;
-
-void acquire_spinlock(int* lock)
+void acquire(struct spinlock* lk)
 {
-    int cpu_id = cpuid();
-    // printf("acquire: %d\n", cpu_id);
-    if (*lock == cpu_id)
-    {
-        return;
-    }
+    struct cpu* cp = mycpu();
+    printf("acquire cpu: %d\n", cpuid());
     intr_off();
     // 操作需要原子性
-    while (1)
-    {
-        if (*lock == -1)
-        {
-            *lock = cpu_id;
-            break;
-        }
-    }
+    while (__sync_lock_test_and_set(&lk->locked, 1) != 0);
+    __sync_synchronize();
+    lk->p = mycpu();
 }
 
-void release_spinlock(int* lock)
+void release(struct spinlock* lk)
 {
-    int cpu_id = cpuid();
-    // printf("release: %d\n", cpu_id);
-    if (*lock != cpu_id)
-        panic("release_spinlock: release a lock that i don't own\n");
-    *lock = LOCK_FREE;
+    lk->p = 0;
+    printf("release cpu: %d\n", cpuid());
+    __sync_synchronize();
+    __sync_lock_release(&lk->locked);
     intr_on();
 }

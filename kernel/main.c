@@ -8,7 +8,6 @@
 #include "param.h"
 
 volatile static int started = 0;
-// uint32 kernel_lock = -1;
 
 int kernel_main()
 {

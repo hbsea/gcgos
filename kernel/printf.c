@@ -42,7 +42,7 @@ static void printptr(uint64 x)
 // to the console.
 int printf(char* fmt, ...)
 {
-    // acquire_spinlock(&kernel_lock);
+    // acquire_spinlock(&cons_lock);
     va_list ap;
     int i, cx, c0, c1, c2;
     char* s;
@@ -136,7 +136,7 @@ int printf(char* fmt, ...)
     }
     va_end(ap);
 
-    // release_spinlock(&kernel_lock);
+    // release_spinlock(&cons_lock);
     return 0;
 }
 

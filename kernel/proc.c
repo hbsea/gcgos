@@ -1,9 +1,9 @@
-#include "proc.h"
 #include "param.h"
 #include "defs.h"
 #include "arm.h"
 #include "defs.h"
 #include "memlayout.h"
+#include "proc.h"
 
 extern char userret[];
 extern char trampoline[];
@@ -218,7 +218,7 @@ void scheduler()
         int found = 0;
         for (p = proc; p < &proc[NPROC]; p++)
         {
-            acquire_spinlock(&kernel_lock);
+            acquire(&p->lock);
             if (p->state == RUNNABLE)
             {
                 p->state = RUNNING;
@@ -227,9 +227,14 @@ void scheduler()
                 c->proc = 0;
                 found = 1;
             }
-            release_spinlock(&kernel_lock);
+            release(&p->lock);
         }
-        if (found == 0) asm volatile("wfi");
+        printf("found value:%d\n", found);
+        if (found == 0)
+        {
+            printf("wfi cpu %d\n", cpuid());
+            asm volatile("wfi");
+        }
     }
 }
 
