@@ -8,20 +8,17 @@ int main()
     pid = fork();
     if (pid > 0)
     {
-        puts("w:");
+        cons_puts("w:\n", 4);
         write(fds[1], "xyz", 4);
     }
     else
     {
-        puts("r:");
+        cons_puts("r:\n", 4);
         read(fds[0], buf, sizeof(buf));
-        puts(buf);
+        cons_puts(buf, sizeof(buf));
     }
+    cons_puts("some text user\n", 16);
 
-    while (1)
-    {
-        // for (int i; i < 100000000; i++);
-        // puts("&");
-    };
+    for (;;);
     return 0;
 }

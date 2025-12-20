@@ -11,14 +11,6 @@ void cons_putc(int c)
     asm volatile("mov x8,#4");
     asm volatile("svc #0");
 }
-void puts(char* s)
-{
-    for (int i = 0; s[i]; i++)
-    {
-        cons_putc(s[i]);
-    }
-}
-
 int pipe(int fd[])
 {
     unsigned long x;
@@ -57,7 +49,12 @@ int block()
 int kill(int pid)
 {
     unsigned long x;
-    asm volatile("mov x8,#9");
+    asm volatile("mov x8,#10");
     asm volatile("svc #0");
     return x;
+}
+void cons_puts(char* s, int size)
+{
+    asm volatile("mov x8,#12");
+    asm volatile("svc #0");
 }

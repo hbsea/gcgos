@@ -1,6 +1,6 @@
 #pragma once
 
-struct gpioStruct
+struct gpio_struct
 {
     int GPFSEL[7];
     int GPSET[2];
@@ -16,7 +16,7 @@ struct gpioStruct
     int GPIO_PUP_PDN_CNTRL_REG[3];
 };
 
-struct AUX_MU_REG
+struct aux_mu_reg
 {
     int AUX_IRQ;
     int AUX_ENABLES;
@@ -33,7 +33,7 @@ struct AUX_MU_REG
     int AUX_MU_STAT_REG;
     int AUX_MU_BAUD_REG;
 };
-struct PL011_REG
+struct pl011_reg
 {
     int DR;
     int RSRECR[5];
@@ -57,9 +57,9 @@ struct PL011_REG
     int TDR;
 };
 
-#define gpio ((struct gpioStruct*)GPIO_BASE)
-#define aux_mu_regs ((struct AUX_MU_REG*)AUX_BASE)
-#define pl011_regs ((struct PL011_REG*)PL011_BASE)
+#define gpio ((struct gpio_struct*)GPIO_BASE)
+#define aux_mu_regs ((struct aux_mu_reg*)AUX_BASE)
+#define pl011_regs ((struct pl011_reg*)PL011_BASE)
 
 void mini_uart_init(void);
 void mini_uart_send_char(char c);

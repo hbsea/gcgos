@@ -5,7 +5,7 @@
 
 struct fd fds[NFD];
 
-int fd_ualloc()
+int fd_ualloc(void)
 {
     int fd;
     struct proc* p = myproc();
@@ -16,7 +16,7 @@ int fd_ualloc()
     return -1;
 }
 
-struct fd* fd_alloc()
+struct fd* fd_alloc(void)
 {
     int i;
     for (i = 0; i < NFD; i++)
@@ -24,7 +24,7 @@ struct fd* fd_alloc()
         if (fds[i].type == FD_CLOSE)
         {
             fds[i].type = FD_NONE;
-            fds[i].count = 1;
+            fds[i].ref = 1;
             return fds + i;
         }
     }
@@ -43,8 +43,8 @@ int fd_read(struct fd* fd, uint64 buf, int n)
 }
 void fd_close(struct fd* fd)
 {
-    fd->count -= 1;
-    if (fd->count == 0)
+    fd->ref--;
+    if (fd->ref == 0)
     {
         if (fd->type == FD_PIPE)
         {
@@ -53,3 +53,5 @@ void fd_close(struct fd* fd)
     }
     fd->type = FD_CLOSE;
 }
+
+void fd_incref(struct fd* fd) { fd->ref++; }

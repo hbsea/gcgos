@@ -62,10 +62,6 @@ int sys_fork(void);
 // exec.c
 void exec(struct proc* p);
 
-// user_proc.c
-void uproc1();
-void uproc2();
-
 // swtch.S
 struct context;
 void swtch(struct context*, struct context*);
@@ -82,13 +78,14 @@ int pipe_read(struct pipe* p, uint64 buf, int n);
 void pipe_close(struct pipe* p, int writeopen);
 
 // fd.c
-int fd_ualloc();
-struct fd* fd_alloc();
+int fd_ualloc(void);
+struct fd* fd_alloc(void);
 int fd_write(struct fd* fd, uint64 addr, int n);
 int fd_read(struct fd* fd, uint64 buf, int n);
 void fd_close(struct fd* fd);
+void fd_incref(struct fd* fd);
 
-uint64 get_entry();
+uint64 get_entry(void);
 
 // spinlock.c
 void acquire(struct spinlock* lk);

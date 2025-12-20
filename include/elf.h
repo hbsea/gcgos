@@ -4,7 +4,7 @@
 #define ELF_MAGIC 0x464c457f
 #define ELF_PROG_LOAD 1
 
-struct Elf
+struct elf
 {
     uint32 magic;
     uint8 elf[12];
@@ -23,7 +23,7 @@ struct Elf
     uint16 shstrndx;  // 节头字符串表的索引
 };
 
-struct Proghdr
+struct proghdr
 {
     uint32 type;
     uint32 flags;

@@ -130,6 +130,17 @@ int sys_kill(void)
     proc_kill(pid);
     return 0;
 };
+int sys_panic(void) { return 0; }
+int sys_cons_puts(void)
+{
+    char buf[256];
+    int i;
+    argint(1, &i);
+    argaddr(0, (uint64*)&buf, i);
+
+    printf("%s", buf);
+    return 0;
+}
 void syscall(void)
 {
     struct proc* cp = myproc();
@@ -161,6 +172,12 @@ void syscall(void)
             break;
         case SYS_kill:
             ret = sys_kill();
+            break;
+        case SYS_panic:
+            ret = sys_panic();
+            break;
+        case SYS_cons_puts:
+            ret = sys_cons_puts();
             break;
         default:
             printf("Unknown sys call %d\n", call_num);

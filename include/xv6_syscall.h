@@ -8,3 +8,5 @@
 #define SYS_close 8
 #define SYS_block 9
 #define SYS_kill 10
+#define SYS_panic 11
+#define SYS_cons_puts 12

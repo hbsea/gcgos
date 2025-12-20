@@ -11,4 +11,5 @@ gdb-remote 1234
 # b scheduler
 # b userinit
 # b release
+# b sys_cons_puts
 c

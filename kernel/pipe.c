@@ -43,7 +43,7 @@ int pipe_write(struct pipe* p, uint64 addr, int n)
     for (int i = 0; i < n; i++)
     {
         p->data[p->writep] = (s[i]);
-        p->writep = p->writep + 1;
+        p->writep++;
     }
     return 0;
 }
@@ -54,7 +54,7 @@ int pipe_read(struct pipe* p, uint64 buf, int n)
     for (int i = 0; i < n; i++)
     {
         s[i] = p->data[p->readp];
-        p->readp = p->readp + 1;
+        p->readp++;
     }
     return -1;
 }

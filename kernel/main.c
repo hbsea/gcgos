@@ -9,7 +9,7 @@
 
 volatile static int started = 0;
 
-int kernel_main()
+void kernel_main()
 {
     if (cpuid() == 0)
     {
@@ -43,5 +43,4 @@ int kernel_main()
     }
 
     scheduler();
-    return 0;
 }

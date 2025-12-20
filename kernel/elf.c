@@ -6,9 +6,9 @@
 
 extern char _binary_build_user_user1_start[];
 extern char _binary_build_user_user1_size[];
-uint64 get_entry()
+uint64 get_entry(void)
 {
-    struct Elf* uelf;
+    struct elf* uelf;
     uelf = (struct Elf*)_binary_build_user_user1_start;
     printf("bin start:%p\n", _binary_build_user_user1_start);
     printf("uelf:%p,magic:%p\n", uelf, uelf->magic);
@@ -16,12 +16,12 @@ uint64 get_entry()
     {
         panic("not a elf format");
     }
-    struct Proghdr* ph;
+    struct proghdr* ph;
     uint64* pa = kalloc();
     for (int i = 0; i < uelf->phnum; i++)
     {
         ph =
-            (struct Proghdr*)(_binary_build_user_user1_start + uelf->phoff) + i;
+            (struct proghdr*)(_binary_build_user_user1_start + uelf->phoff) + i;
         uint64* ucd = (uint64*)(_binary_build_user_user1_start +
                                 i * uelf->phentsize + ph->off);
         for (int s = 0; s < ph->filesz; s++)

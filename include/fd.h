@@ -7,7 +7,7 @@ struct fd
         FD_NONE,
         FD_PIPE
     } type;
-    int count;
+    int ref;  // reference count
     char readable;
     char writeable;
     struct pipe* pipe;
