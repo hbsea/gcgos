@@ -10,15 +10,17 @@
 // hardware is (GPIO_BASE|0x00210000)
 #define AUX_BASE (GPIO_BASE | 0x15000)
 #define PL011_BASE (GPIO_BASE | 0x1000)
-#define PL011_IRQ (121+32)//0x79 121
+#define PL011_IRQ (121 + 32)  // 0x79 121
 #define TIMER_IRQ 30
+
+#define SDCARD 0xFE300000
 
 #define GIC_BASE 0xFF840000
 #define GICD_BASE (GIC_BASE + 0x1000)
 #define GICC_BASE (GIC_BASE + 0x2000)
 
-#define PGSIZE 4096 // bytes per page
-#define PGSHIFT 12  // bits of offset within a page
+#define PGSIZE 4096  // bytes per page
+#define PGSHIFT 12   // bits of offset within a page
 
 #define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
 #define PGROUNDDOWN(sz) ((sz) & ~(PGSIZE - 1))

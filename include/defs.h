@@ -90,3 +90,14 @@ uint64 get_entry(void);
 // spinlock.c
 void acquire(struct spinlock* lk);
 void release(struct spinlock* lk);
+
+// sdchi.c
+int sd_init(void);
+int sd_readblock(unsigned int lba, unsigned char* buffer, unsigned int num);
+int sd_writeblock(unsigned char* buffer, unsigned int lba, unsigned int num);
+
+// bio.c
+struct buf* bread(uint sector);
+
+// fs.c
+struct inode* iget(uint inum);

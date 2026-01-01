@@ -25,7 +25,9 @@ void kernel_main()
         gic_init();
         pl011_uart_ie();
         timerinit();
+        sd_init();
         userinit();
+        iget(1);
 
         __sync_synchronize();
         started = 1;
@@ -38,7 +40,6 @@ void kernel_main()
         kvminithart();
         trapinithart();
         gic_init();
-        // pl011_uart_ie();
         timerinit();
     }
 

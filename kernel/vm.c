@@ -29,6 +29,8 @@ pagetable_t kvmmake(void)
     // uart registers
     kvmmap(kpgtbl, PL011_BASE, PL011_BASE, PGSIZE,
            PTE_DEVICE | PTE_XN | PTE_AP_RW_EL1);
+    // virtio_disk
+    kvmmap(kpgtbl, SDCARD, SDCARD, PGSIZE, PTE_DEVICE | PTE_XN | PTE_AP_RW_EL1);
     // map kernel text executable and read-only.
     kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext - KERNBASE,
            PTE_NORMAL | PTE_AP_RO_EL1);

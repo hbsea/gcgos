@@ -12,4 +12,7 @@ gdb-remote 1234
 # b userinit
 # b release
 # b sys_cons_puts
+# b sd_init
+# b bread
+b iget
 c

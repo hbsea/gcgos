@@ -24,7 +24,10 @@ O = $G/boot.o \
 	$G/spinlock.o \
 	$G/fd.o \
 	$G/pipe.o \
-	$G/elf.o
+	$G/elf.o \
+	$G/sdhci.o \
+	$G/bio.o \
+	$G/fs.o
 
 C = clang
 A = llvm-mc
@@ -40,7 +43,9 @@ M =
 
 
 
-all: $B/kernel8.img
+all: $B/kernel8.img $B/fs.img
+# echo -n "HELLO " | dd of=$B/fs.img bs=1M seek=0 count=1 conv=sync
+
 # all: clean kernel8.img
 # qemu-system-aarch64 -M raspi4b -kernel build/kernel8.img  -nographic -S -s 
 
@@ -85,8 +90,11 @@ $H/%.o: $U/%.c
 
 # copy image to SD card
 # cp "/Users/galax/Library/Mobile Documents/com~apple~CloudDocs/gcgos/kernel8.img" /Volumes/bootfs/
+$B/mkfs: mkfs/mkfs.c include/fs.h
+	$C -o $@ $<
+
+$B/fs.img: $B/mkfs
+	$< $@
 
 clean:
-	rm $P $O $B/kernel8*
-
-
+	rm $P $O $B/kernel8* $B/mkfs $B/fs.img
