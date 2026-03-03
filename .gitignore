@@ -54,3 +54,4 @@ dkms.conf
 tags
 build
 .cache
+compile_commands.json

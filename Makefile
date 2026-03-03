@@ -38,8 +38,7 @@ D += --target=aarch64-elf
 D += -nostdlib -ffreestanding
 # D += -Iinclude
 
-M =
-# M = --aarch64-elf=aarch64-elf
+M = --target=aarch64-elf
 
 
 
@@ -70,7 +69,7 @@ dir:
 	mkdir -p $G $H
 
 P = $H/user1 \
-	$H/user2 
+	$H/user2 \
 I = $H/ulib.o 
 uprog: $P $(I)
 # $H/%: $H/%.bin
@@ -79,11 +78,11 @@ uprog: $P $(I)
 # 	llvm-objcopy -O binary $< $@
 # $H/%.elf: $H/%.o $(I)
 $H/%: $H/%.o $(I)
-	$L $M  -T $U/user.ld -o $@ $< $(I)
+	$L -T $U/user.ld -o $@ $< $(I)
 $H/%.o: $U/%.c
 	echo "Compiling $@ from $<"
 	echo "$(I)"
-	$C $D -c -o $@ $<
+	$C $M -c -o $@ $<
 
 #使用lldb时，使用gdb-remote host：port
 #(lldb) gdb-remote localhost:1234
@@ -93,8 +92,8 @@ $H/%.o: $U/%.c
 $B/mkfs: mkfs/mkfs.c include/fs.h
 	$C -o $@ $<
 
-$B/fs.img: $B/mkfs
-	$< $@
+$B/fs.img: $B/mkfs $P
+	$< $@ $P
 
 clean:
-	rm $P $O $B/kernel8* $B/mkfs $B/fs.img
+	rm $P $O $B/kernel8* $B/mkfs $B/fs.img $P $H/*.o

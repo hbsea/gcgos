@@ -7,6 +7,7 @@ struct spinlock buf_talbe_lock;
 
 struct buf* getblk()
 {
+    acquire(&buf_talbe_lock);
     while (1)
     {
         for (int i = 0; i < NBUF; i++)
@@ -14,6 +15,7 @@ struct buf* getblk()
             if ((buf[i].flags & B_BUSY) == 0)
             {
                 buf[i].flags |= B_BUSY;
+                release(&buf_talbe_lock);
                 return buf + i;
             }
         }

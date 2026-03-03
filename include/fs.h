@@ -4,13 +4,16 @@ struct supperblock
     int ninodes;
 };
 
-#define NDIRECT 14
+#define NDIRECT 12
+#define NINDIRECT (512 / sizeof(uint))
+#define MAXFILE (NDIRECT + NINDIRECT)
+#define DIRSIZ 14
 struct dinode
 {
     short type;
     short nlink;
     uint size;
-    uint addrs[NDIRECT];
+    uint addrs[NDIRECT + 1];
 };
 
 #define T_DIR 1
@@ -21,7 +24,7 @@ struct dinode
 struct dirent
 {
     uint16 inum;
-    char name[14];
+    char name[DIRSIZ];
 };
 
 #define NINODE 100
@@ -32,7 +35,7 @@ struct inode
     int count;
     int busy;
     short type;
-    short link;
+    short nlink;
     uint size;
     uint addrs[NDIRECT];
 };

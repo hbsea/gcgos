@@ -98,6 +98,8 @@ int sd_writeblock(unsigned char* buffer, unsigned int lba, unsigned int num);
 
 // bio.c
 struct buf* bread(uint sector);
+void brelse(struct buf* b);
 
 // fs.c
 struct inode* iget(uint inum);
+void iput(struct inode* ip);

@@ -27,7 +27,8 @@ void kernel_main()
         timerinit();
         sd_init();
         userinit();
-        iget(1);
+        struct inode* ip = iget(2);
+        iput(ip);
 
         __sync_synchronize();
         started = 1;
