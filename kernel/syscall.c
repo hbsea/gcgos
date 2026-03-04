@@ -141,6 +141,16 @@ int sys_cons_puts(void)
     printf("%s", buf);
     return 0;
 }
+
+int sys_exec(void)
+{
+    char buf[14];
+    argaddr(0, (uint64*)&buf, 14);
+
+    kexec(buf);
+
+    return 0;
+}
 void syscall(void)
 {
     struct proc* cp = myproc();
@@ -179,8 +189,12 @@ void syscall(void)
         case SYS_cons_puts:
             ret = sys_cons_puts();
             break;
+        case SYS_exec:
+            ret = sys_exec();
+            break;
         default:
             printf("Unknown sys call %d\n", call_num);
+            panic("syscall");
             break;
     }
     cp->tf->x0 = ret;

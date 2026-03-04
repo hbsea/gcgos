@@ -27,7 +27,6 @@ void kernel_main()
         timerinit();
         sd_init();
         userinit();
-        namei("/user1");
 
         __sync_synchronize();
         started = 1;

@@ -16,5 +16,6 @@ settings set show-statusline false
 # b sd_init
 # b bread
 # b iget
-b namei
+# b namei
+b kexec
 c

@@ -58,3 +58,8 @@ void cons_puts(char* s, int size)
     asm volatile("mov x8,#12");
     asm volatile("svc #0");
 }
+void exec(char* path)
+{
+    asm volatile("mov x8,#13");
+    asm volatile("svc #0");
+}

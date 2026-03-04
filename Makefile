@@ -93,7 +93,7 @@ $B/mkfs: mkfs/mkfs.c include/fs.h
 	$C -o $@ $<
 
 $B/fs.img: $B/mkfs $P
-	$< $@ $P
+	$< $@ $H/user2
 
 clean:
 	rm $P $O $B/kernel8* $B/mkfs $B/fs.img $P $H/*.o

@@ -1,7 +1,8 @@
 #include "proc.h"
 #include "defs.h"
 #include "memlayout.h"
-void exec(struct proc *p)
+int kexec(char* path)
 {
-    p->state = RUNNABLE;
-};
+    namei(path);
+    return 0;
+}

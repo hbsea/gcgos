@@ -60,7 +60,7 @@ void syscall(void);
 int sys_fork(void);
 
 // exec.c
-void exec(struct proc* p);
+int kexec(char* path);
 
 // swtch.S
 struct context;
