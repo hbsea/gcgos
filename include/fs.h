@@ -37,5 +37,5 @@ struct inode
     short type;
     short nlink;
     uint size;
-    uint addrs[NDIRECT];
+    uint addrs[NDIRECT + 1];
 };

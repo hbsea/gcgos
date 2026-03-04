@@ -15,5 +15,6 @@ settings set show-statusline false
 # b sys_cons_puts
 # b sd_init
 # b bread
-b iget
+# b iget
+b namei
 c

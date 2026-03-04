@@ -103,3 +103,4 @@ void brelse(struct buf* b);
 // fs.c
 struct inode* iget(uint inum);
 void iput(struct inode* ip);
+struct inode* namei(char* path);

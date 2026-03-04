@@ -106,12 +106,15 @@ struct inode* namei(char* path)
         }
         for (off = 0; off < dp->size; off += 512)
         {
-            bp = bread(off / 512);
+            bp = bread(dp->addrs[off / 512]);
             for (ep = (struct dirent*)bp->data;
                  ep < (struct dirent*)bp->data + 512; ep++)
             {
                 if (ep->inum == 0) continue;
                 for (i = 0; i < DIRSIZ && cp[i] != '/' && cp[i]; i++)
+                    if (cp[i] != ep->name[i]) break;
+                if ((cp[i] == '\0' || cp[i] == '/') &&
+                    (i >= DIRSIZ || ep->name[i] == '\0'))
                 {
                     ninum = ep->inum;
                     brelse(bp);
