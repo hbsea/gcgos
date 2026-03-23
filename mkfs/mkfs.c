@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-int nblocks = 1009;
+int nblocks = 2012;
 int ninodes = 100;
 char zero[512] = {0};
 int fd;
@@ -55,8 +55,7 @@ int main(int argc, char* argv[])
 {
     int i;
     struct dinode din, user1;
-    uint nderict[NINDIRECT];
-    char dbuf[512], fbuf[512];
+    char dbuf[512], fbuf[512], tbuf[512];
     printf("fs making\n");
     printf("argc :%d argv[1]:%s argv[2]:%s\n", argc, argv[1], argv[2]);
     fd = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, 0666);
@@ -79,51 +78,58 @@ int main(int argc, char* argv[])
     din.addrs[0] = freeblock++;
     winode(1, &din);
 
-    user1.type = T_FILE;
-    user1.nlink = 1;
-    int ufd = open(argv[2], 0);
-    int cc = 0, first = 1;
-
-    user1.size = 0;
-    while ((cc = read(ufd, fbuf, sizeof(fbuf))) > 0)
-    {
-        // printf("process data block:%d\n", user1.size / sizeof(fbuf));
-        uint index = user1.size / sizeof(fbuf);
-        if ((user1.size / sizeof(fbuf)) <= 11)
-        {
-            user1.addrs[user1.size / sizeof(fbuf)] = freeblock++;
-            wsect(user1.addrs[user1.size / sizeof(fbuf)], fbuf);
-        }
-        else
-        {
-            if (first)
-            {
-                first = 0;
-                user1.addrs[12] = freeblock++;
-                *nderict = user1.addrs[12];
-            }
-            assert((index - 12) < NINDIRECT);
-            nderict[index - 12] = freeblock++;
-            wsect(nderict[index - 12], fbuf);
-        }
-        user1.size += cc;
-    }
-    printf("end of freeblock:%d\n", freeblock);
-    printf("user1.size:%d\n", user1.size);
-    winode(2, &user1);
-
-    char* filename = strrchr(argv[2], '/');
-    printf("filename:%s\n", filename + 1);
-
     ((struct dirent*)dbuf)[0].inum = 1;
     strcpy(((struct dirent*)dbuf)[0].name, ".");
     ((struct dirent*)dbuf)[1].inum = 1;
     strcpy(((struct dirent*)dbuf)[1].name, "..");
-    ((struct dirent*)dbuf)[2].inum = 2;
-    strcpy(((struct dirent*)dbuf)[2].name, filename + 1);
-    wsect(din.addrs[0], dbuf);
 
+    for (int arg = 2; arg < argc; arg++)
+    {
+        int ufd = open(argv[arg], 0);
+        int cc = 0, first = 1;
+        user1.type = T_FILE;
+        user1.nlink = 1;
+        user1.size = 0;
+
+        while ((cc = read(ufd, fbuf, sizeof(fbuf))) > 0)
+        {
+            // printf("process data block:%d\n", user1.size / sizeof(fbuf));
+            uint index = user1.size / sizeof(fbuf);
+            if (index <= 30)
+            {
+                user1.addrs[index] = freeblock++;
+                wsect(user1.addrs[index], fbuf);
+            }
+            else
+            {
+                if (first)
+                {
+                    first = 0;
+                    user1.addrs[31] = freeblock++;
+                }
+                rsect(user1.addrs[31], tbuf);
+                uint* p = (uint*)tbuf;
+
+                assert((index - 31) < NINDIRECT);
+                p[index - 31] = freeblock++;
+                wsect(user1.addrs[31], tbuf);
+                wsect(p[index - 31], fbuf);
+            }
+            user1.size += cc;
+        }
+        printf("end of freeblock:%d\n", freeblock);
+        printf("user1.size:%d\n", user1.size);
+        winode(arg, &user1);
+
+        char* filename = strrchr(argv[arg], '/');
+        printf("filename:%s\n", filename + 1);
+
+        ((struct dirent*)dbuf)[arg].inum = arg;
+        strcpy(((struct dirent*)dbuf)[arg].name, filename + 1);
+
+        close(ufd);
+    }
+    wsect(din.addrs[0], dbuf);
     close(fd);
-    close(ufd);
     return 0;
 }

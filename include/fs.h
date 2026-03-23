@@ -1,10 +1,13 @@
+#pragma once
+#include "types.h"
+
 struct supperblock
 {
     int nblocks;
     int ninodes;
 };
 
-#define NDIRECT 12
+#define NDIRECT 31
 #define NINDIRECT (512 / sizeof(uint))
 #define MAXFILE (NDIRECT + NINDIRECT)
 #define DIRSIZ 14

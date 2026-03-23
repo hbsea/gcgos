@@ -27,7 +27,7 @@ struct proghdr
 {
     uint32 type;
     uint32 flags;
-    uint64 off;
+    uint64 off;  // p_offset（文件偏移,ELF 文件中的起始位置）
     uint64 vaddr;
     uint64 paddr;
     uint64 filesz;

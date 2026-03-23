@@ -18,4 +18,5 @@ settings set show-statusline false
 # b iget
 # b namei
 b kexec
+# b forkret
 c

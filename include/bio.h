@@ -1,4 +1,7 @@
+#pragma once
+#include "types.h"
 #define NBUF 10
+
 struct buf
 {
     int flags;

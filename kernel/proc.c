@@ -112,7 +112,9 @@ void forkret(void)
     if (first)
     {
         first = 0;
-        get_entry();
+
+        // get_entry();
+        kexec("/user1");
         // uint64 upsize =
         //     PGROUNDUP((uint64)_binary_build_user_user1_size) + PGSIZE;
         //

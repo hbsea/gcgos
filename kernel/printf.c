@@ -142,6 +142,7 @@ int printf(char* fmt, ...)
 
 void panic(char* s)
 {
+    intr_off();
     printf("panic:  %s\n", s);
     while (1) asm volatile("wfi");
 }

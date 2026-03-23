@@ -9,7 +9,7 @@ extern char _binary_build_user_user1_size[];
 uint64 get_entry(void)
 {
     struct elf* uelf;
-    uelf = (struct Elf*)_binary_build_user_user1_start;
+    uelf = (struct elf*)_binary_build_user_user1_start;
     printf("bin start:%p\n", _binary_build_user_user1_start);
     printf("uelf:%p,magic:%p\n", uelf, uelf->magic);
     if (uelf->magic != ELF_MAGIC)

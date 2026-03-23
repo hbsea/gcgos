@@ -78,7 +78,7 @@ uprog: $P $(I)
 # 	llvm-objcopy -O binary $< $@
 # $H/%.elf: $H/%.o $(I)
 $H/%: $H/%.o $(I)
-	$L -T $U/user.ld -o $@ $< $(I)
+	$L -T $U/user.ld -o $@ $< $(I) 
 $H/%.o: $U/%.c
 	echo "Compiling $@ from $<"
 	echo "$(I)"
@@ -93,7 +93,7 @@ $B/mkfs: mkfs/mkfs.c include/fs.h
 	$C -o $@ $<
 
 $B/fs.img: $B/mkfs $P
-	$< $@ $H/user2
+	$< $@ $P
 
 clean:
 	rm $P $O $B/kernel8* $B/mkfs $B/fs.img $P $H/*.o
