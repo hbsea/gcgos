@@ -134,6 +134,8 @@ int sys_panic(void) { return 0; }
 int sys_cons_puts(void)
 {
     char buf[256];
+    for (int x = 0; x < 256; x++) buf[x] = 0;
+
     int i;
     argint(1, &i);
     argaddr(0, (uint64*)&buf, i);
@@ -145,9 +147,13 @@ int sys_cons_puts(void)
 int sys_exec(void)
 {
     char buf[14];
+    for (int x = 0; x < 14; x++) buf[x] = 0;
     argaddr(0, (uint64*)&buf, 14);
 
-    kexec(buf);
+    char args[512];
+    argaddr(2, (uint64*)&args, 512);
+
+    kexec(buf, &args);
 
     return 0;
 }

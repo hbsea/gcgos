@@ -1,7 +1,8 @@
 #include "ulib.h"
+void test() {}
 int main(void)
 {
-    cons_puts("user2 runing now\n", 17);
-    int i = 0;
+    puts("user2 runing now\n");
+    for (;;);
     return 0;
 }

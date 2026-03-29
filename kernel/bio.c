@@ -27,7 +27,7 @@ struct buf* bread(uint sector)
     struct buf* b;
     b = getblk();
     sd_readblock(sector, b->data, 1);
-    printf("%s\n", b->data);
+    // printf("%s\n", b->data);
     return b;
 }
 void brelse(struct buf* b) { b->flags &= ~B_BUSY; }

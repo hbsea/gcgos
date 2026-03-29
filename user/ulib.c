@@ -1,10 +1,15 @@
 int fork()
 {
     unsigned long x;
-    asm volatile("mov x8,#0x1");
+    asm volatile("mov x8,#1");
     asm volatile("svc #0");
     asm volatile("mov %0,x0" : "=r"(x));
     return x;
+}
+void xv6_exit()
+{
+    asm volatile("mov x8,#2");
+    asm volatile("svc #0");
 }
 void cons_putc(int c)
 {
@@ -58,8 +63,18 @@ void cons_puts(char* s, int size)
     asm volatile("mov x8,#12");
     asm volatile("svc #0");
 }
-void exec(char* path)
+void exec(char* path, ...)
 {
     asm volatile("mov x8,#13");
     asm volatile("svc #0");
+}
+void puts(char* s)
+{
+    int i = 0;
+    char* ss = s;
+    while (*ss++)
+    {
+        i++;
+    }
+    cons_puts(s, i);
 }

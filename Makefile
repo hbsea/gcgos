@@ -69,7 +69,8 @@ dir:
 	mkdir -p $G $H
 
 P = $H/user1 \
-	$H/user2 
+	$H/user2 \
+	$H/echo
 I = $H/ulib.o 
 uprog: $P $(I)
 # $H/%: $H/%.bin

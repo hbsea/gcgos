@@ -114,7 +114,9 @@ void forkret(void)
         first = 0;
 
         // get_entry();
-        kexec("/user1");
+        // kexec("user1", "");
+        char* args[] = {"echo", "hello", "goodbye", 0};
+        kexec("/echo", args);  // TODO handle args
         // uint64 upsize =
         //     PGROUNDUP((uint64)_binary_build_user_user1_size) + PGSIZE;
         //
@@ -146,10 +148,10 @@ struct proc* newproc(void)
     np->ctx.x30 = (uint64)forkret;
     np->tf->x0 = 0;  // so fork() returns 0 in child
 
-    uint64 utext = (uint64)(0);
-    printf("utext:%p uproc:%p tf:%p\n", utext, 0, np->tf);
-    mappages(np->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
-    np->tf->sp_el0 = PGSIZE;
+    // uint64 utext = (uint64)(0);
+    // printf("utext:%p uproc:%p tf:%p\n", utext, 0, np->tf);
+    // mappages(np->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
+    // np->tf->sp_el0 = PGSIZE;
     np->ctx.sp = (uint64)(np->kstack + PGSIZE);
 
     printf(

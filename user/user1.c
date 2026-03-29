@@ -17,9 +17,11 @@ int main()
     //     read(fds[0], buf, sizeof(buf));
     //     cons_puts(buf, sizeof(buf));
     // }
-    cons_puts("user1 running\n", 14);
+    puts("user1 running\n");
 
-    exec("/user2");
+    exec("user2");
+    char *args[] = {"echo", "hello", "goodbye", 0};
+    exec("/echo", args);  // TODO handle args
 
     for (;;);
     return 0;

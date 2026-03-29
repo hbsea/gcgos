@@ -51,10 +51,56 @@ void winode(uint inum, struct dinode* ip)
            (unsigned)dip - (unsigned)buf);
     wsect(block_num, buf);
 }
+
+void addfile(int ufd, int arg, char* filename, char dbuf[])
+{
+    char ufbuf[512], tbuf[512];
+    int cc = 0, first = 1;
+    struct dinode user1;
+    user1.type = T_FILE;
+    user1.nlink = 1;
+    user1.size = 0;
+    // user1.addrs[31] = 0;
+
+    while ((cc = read(ufd, ufbuf, 512)) > 0)
+    {
+        // printf("process data block:%d\n", user1.size / sizeof(fbuf));
+        uint index = user1.size / 512;
+        if (index <= 30)
+        {
+            user1.addrs[index] = freeblock++;
+            wsect(user1.addrs[index], ufbuf);
+        }
+        else
+        {
+            if (first)
+            {
+                first = 0;
+                user1.addrs[31] = freeblock++;
+            }
+            rsect(user1.addrs[31], tbuf);
+            uint* p = (uint*)tbuf;
+            assert((index - 31) < NINDIRECT);
+            p[index - 31] = freeblock++;
+            wsect(user1.addrs[31], tbuf);
+            wsect(p[index - 31], ufbuf);
+        }
+        user1.size += cc;
+    }
+    printf("end of freeblock:%d\n", freeblock);
+    printf("user1 %p.size:%d\n", &user1, user1.size);
+    winode(arg, &user1);
+
+    printf("filename:%s\n", filename + 1);
+
+    ((struct dirent*)dbuf)[arg].inum = arg;
+    strcpy(((struct dirent*)dbuf)[arg].name, filename + 1);
+    close(ufd);
+}
 int main(int argc, char* argv[])
 {
     int i;
-    struct dinode din, user1;
+    struct dinode din;
     char dbuf[512], fbuf[512], tbuf[512];
     printf("fs making\n");
     printf("argc :%d argv[1]:%s argv[2]:%s\n", argc, argv[1], argv[2]);
@@ -86,48 +132,8 @@ int main(int argc, char* argv[])
     for (int arg = 2; arg < argc; arg++)
     {
         int ufd = open(argv[arg], 0);
-        int cc = 0, first = 1;
-        user1.type = T_FILE;
-        user1.nlink = 1;
-        user1.size = 0;
-
-        while ((cc = read(ufd, fbuf, sizeof(fbuf))) > 0)
-        {
-            // printf("process data block:%d\n", user1.size / sizeof(fbuf));
-            uint index = user1.size / sizeof(fbuf);
-            if (index <= 30)
-            {
-                user1.addrs[index] = freeblock++;
-                wsect(user1.addrs[index], fbuf);
-            }
-            else
-            {
-                if (first)
-                {
-                    first = 0;
-                    user1.addrs[31] = freeblock++;
-                }
-                rsect(user1.addrs[31], tbuf);
-                uint* p = (uint*)tbuf;
-
-                assert((index - 31) < NINDIRECT);
-                p[index - 31] = freeblock++;
-                wsect(user1.addrs[31], tbuf);
-                wsect(p[index - 31], fbuf);
-            }
-            user1.size += cc;
-        }
-        printf("end of freeblock:%d\n", freeblock);
-        printf("user1.size:%d\n", user1.size);
-        winode(arg, &user1);
-
         char* filename = strrchr(argv[arg], '/');
-        printf("filename:%s\n", filename + 1);
-
-        ((struct dirent*)dbuf)[arg].inum = arg;
-        strcpy(((struct dirent*)dbuf)[arg].name, filename + 1);
-
-        close(ufd);
+        addfile(ufd, arg, filename, dbuf);
     }
     wsect(din.addrs[0], dbuf);
     close(fd);

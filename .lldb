@@ -17,6 +17,12 @@ settings set show-statusline false
 # b bread
 # b iget
 # b namei
+# b sys_exec
 b kexec
-# b forkret
 c
+b mappages
+c
+c
+c
+fin
+
