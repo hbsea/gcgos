@@ -40,10 +40,19 @@ void argaddr(int n, uint64* ip, int max)
 
     char* d = (char*)ip;
     char* s = (char*)argaddr;
-    while (max-- > 0)
-    {
-        *d++ = *s++;
-    }
+    while (max-- > 0) *d++ = *s++;
+}
+
+void fetchaddr(uint64 uva, uint64* ip, int size)
+{
+    uint64 va0 = PGROUNDDOWN(uva);
+    struct proc* p = myproc();
+    uint64 pa = walkaddr(p->pagetable, va0);
+    uint64* argaddr = (uint64*)(pa + uva - va0);
+
+    char* d = (char*)ip;
+    char* s = (char*)argaddr;
+    while (*s && size-- > 0) *d++ = *s++;
 }
 void argint(int n, int* ip) { *ip = argraw(n); }
 
@@ -151,9 +160,18 @@ int sys_exec(void)
     argaddr(0, (uint64*)&buf, 14);
 
     char args[512];
-    argaddr(2, (uint64*)&args, 512);
+    argaddr(1, (uint64*)&args, 512);
+#define MAXARG 32
+    uint64* argv[MAXARG];
+    uint64* arg = (uint64*)args;
 
-    kexec(buf, &args);
+    for (int i = 0; arg[i] != 0; i++)
+    {
+        argv[i] = kalloc();
+        fetchaddr(arg[i], argv[i], PGSIZE);
+    }
+
+    kexec(buf, (char**)&argv);
 
     return 0;
 }

@@ -19,10 +19,4 @@ settings set show-statusline false
 # b namei
 # b sys_exec
 b kexec
-c
-b mappages
-c
-c
-c
-fin
 

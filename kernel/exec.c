@@ -83,7 +83,7 @@ int kexec(char* path, char** args)
     uint64 align_sz = sz + PGSIZE;
     for (s = argc - 1; s >= 0; s--)
     {
-        uint len = 0;
+        uint len;
         char* arg = args[s];
         for (len = 0; arg[len] != 0; len++);
         dsp -= len;

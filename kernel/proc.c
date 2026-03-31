@@ -114,9 +114,9 @@ void forkret(void)
         first = 0;
 
         // get_entry();
-        // kexec("user1", "");
-        char* args[] = {"echo", "hello", "goodbye", 0};
-        kexec("/echo", args);  // TODO handle args
+        kexec("user1", (char*[]){"user1", 0});
+        // char* args[] = {"echo", "hello", "goodbye", 0};
+        // kexec("/echo", args);  // TODO handle args
         // uint64 upsize =
         //     PGROUNDUP((uint64)_binary_build_user_user1_size) + PGSIZE;
         //
@@ -140,8 +140,8 @@ void forkret(void)
 
 struct proc* newproc(void)
 {
-    struct proc* np;
-    struct proc* cp;
+    struct proc *np, *cp;
+    cp = myproc();
     np = allocproc();
     np->ppid = cp->pid;
     np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);

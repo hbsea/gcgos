@@ -1,6 +1,6 @@
 #include "ulib.h"
 
-char buf[32];
+// char buf[32];
 int main()
 {
     // int pid, fds[2];
@@ -19,7 +19,7 @@ int main()
     // }
     puts("user1 running\n");
 
-    exec("user2");
+    // exec("user2", (char *[]){"user2", 0});
     char *args[] = {"echo", "hello", "goodbye", 0};
     exec("/echo", args);  // TODO handle args
 
