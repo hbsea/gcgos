@@ -20,8 +20,25 @@ int main()
     puts("user1 running\n");
 
     // exec("user2", (char *[]){"user2", 0});
-    char *args[] = {"echo", "hello", "goodbye", 0};
-    exec("/echo", args);  // TODO handle args
+    // char *args[] = {"echo", "hello", "goodbye", 0};
+    // exec("/echo", args);  // TODO handle args
+
+    int fd;
+    fd = open("user2");
+    if (fd >= 0)
+    {
+        puts("open user2 OK\n");
+        close(fd);
+    }
+    fd = open("notexist");
+    if (fd >= 0)
+    {
+        puts("open notexist success\n");
+    }
+    else
+    {
+        puts("open notexist failed\n");
+    }
 
     for (;;);
     return 0;

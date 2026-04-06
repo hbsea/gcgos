@@ -3,6 +3,7 @@
 #include "param.h"
 #include "memlayout.h"
 #include "arm.h"
+#include "spinlock.h"
 
 extern char userret[];
 extern char trampoline[];

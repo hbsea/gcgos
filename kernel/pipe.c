@@ -16,9 +16,9 @@ int pipe_alloc(struct fd** fd1, struct fd** fd2)
 {
     *fd1 = *fd2 = 0;
     struct pipe* p = 0;
-    if ((*fd1 = fd_alloc()) == 0) goto opps;
+    if ((*fd1 = fd_alloc()) == 0) return -1;
     printf("fdtype:%d\n", (*fd1)->type);
-    if ((*fd2 = fd_alloc()) == 0) goto opps;
+    if ((*fd2 = fd_alloc()) == 0) return -1;
     p = (struct pipe*)kalloc();
     p->readopen = 1;
     p->writeopen = 1;
@@ -33,8 +33,6 @@ int pipe_alloc(struct fd** fd1, struct fd** fd2)
     (*fd2)->pipe = p;
 
     return 0;
-opps:
-    return -1;
 }
 
 int pipe_write(struct pipe* p, uint64 addr, int n)

@@ -11,7 +11,7 @@ int fd_ualloc(void)
     struct proc* p = myproc();
     for (fd = 0; fd < NOFILE; fd++)
     {
-        if (p->fds[fd] == 0) return fd;
+        if (p->fds[fd] == FD_CLOSE) return fd;
     }
     return -1;
 }
@@ -49,6 +49,10 @@ void fd_close(struct fd* fd)
         if (fd->type == FD_PIPE)
         {
             pipe_close(fd->pipe, fd->writeable);
+        }
+        if (fd->type == FD_FILE)
+        {
+            file_close(fd->ip);
         }
     }
     fd->type = FD_CLOSE;

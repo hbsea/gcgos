@@ -1,3 +1,4 @@
+#include "fs.h"
 #include "xv6_syscall.h"
 #include "proc.h"
 #include "defs.h"
@@ -175,6 +176,29 @@ int sys_exec(void)
 
     return 0;
 }
+int sys_open(void)
+{
+    char file_name[14];
+    for (int x = 0; x < 14; x++) file_name[x] = 0;
+    argaddr(0, (uint64*)&file_name, 14);
+    struct inode* ip = namei(file_name);
+    if (ip == 0) return -1;
+
+    int ufd;
+    struct fd* fd_file;
+    fd_file = fd_alloc();
+    ufd = fd_ualloc();
+    struct proc* p = myproc();
+
+    fd_file->type = FD_FILE;
+    fd_file->ip = ip;
+    fd_file->readable = 1;
+    fd_file->writeable = 0;
+
+    p->fds[ufd] = fd_file;
+
+    return ufd;
+}
 void syscall(void)
 {
     struct proc* cp = myproc();
@@ -204,6 +228,9 @@ void syscall(void)
         case SYS_read:
             ret = sys_read();
             break;
+        case SYS_close:
+            ret = sys_close();
+            break;
         case SYS_kill:
             ret = sys_kill();
             break;
@@ -215,6 +242,9 @@ void syscall(void)
             break;
         case SYS_exec:
             ret = sys_exec();
+            break;
+        case SYS_open:
+            ret = sys_open();
             break;
         default:
             printf("Unknown sys call %d\n", call_num);

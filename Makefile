@@ -27,7 +27,8 @@ O = $G/boot.o \
 	$G/elf.o \
 	$G/sdhci.o \
 	$G/bio.o \
-	$G/fs.o
+	$G/fs.o \
+	$G/file.o
 
 C = clang
 A = llvm-mc

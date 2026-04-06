@@ -8,3 +8,5 @@ int read(int fd, char* buf, int n);
 void cons_puts(char* s, int size);
 void exec(char* path, ...);
 void puts(char* s);
+int open(char* s);
+void close(int fd);
