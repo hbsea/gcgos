@@ -156,8 +156,8 @@ int sys_cons_puts(void)
 
 int sys_exec(void)
 {
-    char buf[14];
-    for (int x = 0; x < 14; x++) buf[x] = 0;
+    char buf[DIRSIZ];
+    for (int x = 0; x < DIRSIZ; x++) buf[x] = 0;
     argaddr(0, (uint64*)&buf, 14);
 
     char args[512];
@@ -178,8 +178,8 @@ int sys_exec(void)
 }
 int sys_open(void)
 {
-    char file_name[14];
-    for (int x = 0; x < 14; x++) file_name[x] = 0;
+    char file_name[DIRSIZ];
+    for (int x = 0; x < DIRSIZ; x++) file_name[x] = 0;
     argaddr(0, (uint64*)&file_name, 14);
     struct inode* ip = namei(file_name);
     if (ip == 0) return -1;
@@ -198,6 +198,22 @@ int sys_open(void)
     p->fds[ufd] = fd_file;
 
     return ufd;
+}
+int sys_mknod(void)
+{
+    char dev_name[DIRSIZ];
+    for (int x = 0; x < DIRSIZ; x++) dev_name[x] = 0;
+    argaddr(0, (uint64*)&dev_name, 14);
+    int type_dev;
+    argint(1, &type_dev);
+    int major;
+    argint(2, &major);
+    int minor;
+    argint(3, &minor);
+
+    mknod(dev_name, T_DEV, major, minor);
+
+    return 0;
 }
 void syscall(void)
 {
@@ -245,6 +261,9 @@ void syscall(void)
             break;
         case SYS_open:
             ret = sys_open();
+            break;
+        case SYS_mknod:
+            ret = sys_mknod();
             break;
         default:
             printf("Unknown sys call %d\n", call_num);

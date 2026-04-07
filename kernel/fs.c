@@ -8,7 +8,7 @@ struct spinlock inode_table_lock;
 
 uint rootdev = 1;
 
-struct inode* iget(uint inum)
+struct inode* iget(uint dev, uint inum)
 {
     struct inode *ip, *nip = 0;
     struct dinode* dip;
@@ -39,7 +39,7 @@ loop:
     nip->busy = 1;
     release(&inode_table_lock);
 
-    bp = bread((inum / IPB) + 2);
+    bp = bread(dev, (inum / IPB) + 2);
     dip = &((struct dinode*)(bp->data))[inum % IPB];
 
     nip->type = dip->type;
@@ -47,10 +47,47 @@ loop:
     nip->size = dip->size;
     for (int i = 0; i <= NDIRECT; i++) nip->addrs[i] = dip->addrs[i];
 
-    bp = bread(nip->addrs[0]);
+    // bp = bread(dev, nip->addrs[0]);
 
     brelse(bp);
     return nip;
+}
+
+struct inode* ialloc(uint dev, short type)
+{
+    int inum;
+    struct dinode* dip;
+    struct buf* bp = bread(dev, 1);
+    struct supperblock* sb = (struct supperblock*)bp;
+    int ninodes = sb->ninodes;
+    brelse(bp);
+    for (inum = 0; inum < ninodes; inum++)
+    {
+        bp = bread(dev, (inum / IPB) + 2);
+        dip = &((struct dinode*)(bp->data))[inum % IPB];
+        if (dip->type == 0) break;
+        brelse(bp);
+    }
+    dip->type = type;
+    bwrite(dev, bp, (inum / IPB) + 2);
+    brelse(bp);
+    struct inode* ip = iget(dev, inum);
+
+    return ip;
+}
+void iupdate(struct inode* ip)
+{
+    struct buf* bp;
+    struct dinode* dip;
+    bp = bread(ip->dev, ip->inum / IPB + 2);
+    dip = &((struct dinode*)(bp->data))[ip->inum % IPB];
+    dip->type = ip->type;
+    dip->major = ip->major;
+    dip->minor = ip->minor;
+    dip->nlink = ip->nlink;
+    dip->size = ip->size;
+    bwrite(ip->dev, bp, ip->inum / IPB + 2);
+    brelse(bp);
 }
 
 void ilock(struct inode* ip)
@@ -93,7 +130,7 @@ struct inode* namei(char* path)
     struct dirent* ep;
     int i;
     unsigned ninum;
-    dp = iget(rootdev);
+    dp = iget(rootdev, 1);
     while (*cp == '/') cp++;
     while (1)
     {
@@ -105,9 +142,9 @@ struct inode* namei(char* path)
         }
         for (off = 0; off < dp->size; off += 512)
         {
-            bp = bread(dp->addrs[off / 512]);
+            bp = bread(dp->dev, dp->addrs[off / 512]);
             for (ep = (struct dirent*)bp->data;
-                 ep < (struct dirent*)bp->data + 512; ep++)
+                 ep < (struct dirent*)(bp->data + 512); ep++)
             {
                 if (ep->inum == 0) continue;
                 for (i = 0; i < DIRSIZ && cp[i] != '/' && cp[i]; i++)
@@ -127,7 +164,42 @@ struct inode* namei(char* path)
         return 0;
     found:
         iput(dp);
-        dp = iget(ninum);
+        dp = iget(dp->dev, ninum);
         while (*cp == '/') cp++;
     }
+}
+
+int mknod(char* path, short type, short major, short minor)
+{
+    struct dirent* ep;
+    struct buf* bp;
+    int off;
+    struct inode* dp = iget(rootdev, 1);
+    struct inode* ip = ialloc(dp->dev, type);
+    ip->major = major;
+    ip->minor = minor;
+    for (off = 0; off < dp->size; off += 512)
+    {
+        bp = bread(dp->dev, dp->addrs[off / 512]);
+        for (ep = (struct dirent*)bp->data;
+             ep < (struct dirent*)(bp->data + 512); ep++)
+        {
+            if (ep->inum == 0)
+            {
+                goto found;
+            }
+        }
+        brelse(bp);
+    }
+    panic("mknod:no dir entry free\n");
+found:
+    ep->inum = ip->inum;
+    for (int i = 0; i < DIRSIZ && path[i]; i++) ep->name[i] = path[i];
+    bwrite(dp->dev, bp, dp->addrs[off / 512]);
+    brelse(bp);
+    // ip is in memeroy,iupdate wirite it on disk;
+    iupdate(ip);
+
+    iput(dp);
+    return 0;
 }

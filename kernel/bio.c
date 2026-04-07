@@ -22,7 +22,8 @@ struct buf* getblk()
     }
 }
 
-struct buf* bread(uint sector)
+// TODO:no cache
+struct buf* bread(uint dev, uint sector)
 {
     struct buf* b;
     b = getblk();
@@ -30,4 +31,12 @@ struct buf* bread(uint sector)
     // printf("%s\n", b->data);
     return b;
 }
+
+void bwrite(uint dev, struct buf* b, uint sector)
+{
+    acquire(&buf_talbe_lock);
+    sd_writeblock(b->data, sector, 1);
+    release(&buf_talbe_lock);
+}
+
 void brelse(struct buf* b) { b->flags &= ~B_BUSY; }

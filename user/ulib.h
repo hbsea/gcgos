@@ -10,3 +10,4 @@ void exec(char* path, ...);
 void puts(char* s);
 int open(char* s);
 void close(int fd);
+int mknode(char* s, short type, short major, short minor);

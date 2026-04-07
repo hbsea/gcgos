@@ -1,4 +1,5 @@
 #include "ulib.h"
+#include "../include/fs.h"
 
 // char buf[32];
 int main()
@@ -23,22 +24,19 @@ int main()
     // char *args[] = {"echo", "hello", "goodbye", 0};
     // exec("/echo", args);  // TODO handle args
 
-    int fd;
-    fd = open("user2");
-    if (fd >= 0)
-    {
-        puts("open user2 OK\n");
-        close(fd);
-    }
-    fd = open("notexist");
-    if (fd >= 0)
-    {
-        puts("open notexist success\n");
-    }
-    else
-    {
-        puts("open notexist failed\n");
-    }
+    // int fd;
+    // fd = open("user2");
+    // if (fd >= 0)
+    // {
+    //     puts("open user2 OK\n");
+    //     close(fd);
+    // }
+    // else
+    // {
+    //     puts("open notexist failed\n");
+    // }
+
+    mknode("console", T_DEV, 1, 1);
 
     for (;;);
     return 0;

@@ -19,7 +19,8 @@ settings set show-statusline false
 # b namei
 # b sys_exec
 # b kexec
-b sys_open
-# b syscall
+# b sys_open
+# b sys_mknod
+b mknod
 c
 

@@ -97,13 +97,15 @@ int sd_readblock(unsigned int lba, unsigned char* buffer, unsigned int num);
 int sd_writeblock(unsigned char* buffer, unsigned int lba, unsigned int num);
 
 // bio.c
-struct buf* bread(uint sector);
+struct buf* bread(uint dev, uint sector);
 void brelse(struct buf* b);
+void bwrite(uint dev, struct buf* b, uint sector);
 
 // fs.c
-struct inode* iget(uint inum);
+struct inode* iget(uint dev, uint inum);
 void iput(struct inode* ip);
 struct inode* namei(char* path);
+int mknod(char* path, short type, short major, short minor);
 
 // file.c
 void file_close(struct inode* ip);

@@ -14,6 +14,8 @@ struct supperblock
 struct dinode
 {
     short type;
+    short major;
+    short minor;
     short nlink;
     uint size;
     uint addrs[NDIRECT + 1];
@@ -21,6 +23,7 @@ struct dinode
 
 #define T_DIR 1
 #define T_FILE 2
+#define T_DEV 3
 
 #define IPB (512 / sizeof(struct dinode))
 
@@ -34,6 +37,8 @@ struct dirent
 struct inode
 {
     uint dev;
+    short major;
+    short minor;
     uint inum;
     int count;
     int busy;

@@ -24,7 +24,7 @@ int kexec(char* path, char** args)
 
     dp = namei(path);
     if (!dp) panic("kexec file not found\n");
-    buf = bread(dp->addrs[0]);
+    buf = bread(dp->dev, dp->addrs[0]);
 
     user_elf = (struct elf*)buf->data;
     if (user_elf->magic != ELF_MAGIC) panic("not an execute file\n");
@@ -45,15 +45,15 @@ int kexec(char* path, char** args)
             struct buf *data_buf, *sec_buf;
             if (i <= 30)
             {
-                data_buf = bread(dp->addrs[i]);
+                data_buf = bread(dp->dev, dp->addrs[i]);
                 sec_buf = data_buf;
             }
             else
             {
-                data_buf = bread(dp->addrs[31]);
+                data_buf = bread(dp->dev, dp->addrs[31]);
                 uint* p = (uint*)data_buf->data;
                 if (p[i - 31] == 0) panic("invalid indirect block");
-                sec_buf = bread(p[i - 31]);
+                sec_buf = bread(dp->dev, p[i - 31]);
             }
             char* s = (char*)sec_buf->data;
             char* d = (char*)pa;

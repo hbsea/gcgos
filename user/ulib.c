@@ -90,3 +90,12 @@ int open(char* s)
     asm volatile("mov %0,x0" : "=r"(x));
     return x;
 }
+
+int mknode(char* s, short type, short major, short minor)
+{
+    unsigned long x;
+    asm volatile("mov x8,#15");
+    asm volatile("svc #0");
+    asm volatile("mov %0,x0" : "=r"(x));
+    return x;
+};
