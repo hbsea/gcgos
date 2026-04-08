@@ -121,8 +121,7 @@ int sys_read(void)
     uint64 va0 = PGROUNDDOWN(uva);
     uint64 pa = walkaddr(p->pagetable, va0);
     uint64 buf = (uint64)(pa + uva - va0);
-    if (p->fds[fd]->type == FD_PIPE) fd_read(p->fds[fd], buf, n);
-    return 0;
+    return fd_read(p->fds[fd], buf, n);
 }
 int sys_close(void)
 {

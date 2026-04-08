@@ -121,6 +121,28 @@ void iincref(struct inode* ip)
     release(&inode_table_lock);
 }
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+int readi(struct inode* ip, void* xdist, uint off, uint n)
+{
+    struct buf* bp;
+    uint target = n, n1;
+
+    char* dst = xdist;
+    while (n > 0 && off < ip->size)
+    {
+        bp = bread(ip->dev, ip->addrs[off / 512]);
+        n1 = min(n, ip->size - off);
+        n1 = min(n1, 512 - (off % 512));
+        char* s = (char*)bp->data + (off % 512);
+        for (int i = 0; i < n1; i++) *dst++ = *s++;
+        n -= n1;
+        off += n1;
+        dst += n1;
+        brelse(bp);
+    }
+    return target - n;
+}
+
 struct inode* namei(char* path)
 {
     struct inode* dp;

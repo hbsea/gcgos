@@ -2,7 +2,7 @@
 int main(int argc, char* argv[])
 {
     puts("echo running now\n");
-    for (int i; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
         puts(argv[i]);
         puts(" ");

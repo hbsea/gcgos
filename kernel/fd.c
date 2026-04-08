@@ -38,7 +38,14 @@ int fd_write(struct fd* fd, uint64 addr, int n)
 }
 int fd_read(struct fd* fd, uint64 buf, int n)
 {
+    if (fd->readable == 0) return -1;
     if (fd->type == FD_PIPE) return pipe_read(fd->pipe, buf, n);
+    if (fd->type == FD_FILE)
+    {
+        int cc = readi(fd->ip, (void*)buf, fd->off, sizeof(buf));
+        if (cc > 0) fd->off += cc;
+        return cc;
+    }
     return -1;
 }
 void fd_close(struct fd* fd)

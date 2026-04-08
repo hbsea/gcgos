@@ -71,7 +71,8 @@ dir:
 
 P = $H/user1 \
 	$H/user2 \
-	$H/echo
+	$H/echo \
+	$H/cat
 I = $H/ulib.o 
 uprog: $P $(I)
 # $H/%: $H/%.bin
@@ -95,7 +96,7 @@ $B/mkfs: mkfs/mkfs.c include/fs.h
 	$C -o $@ $<
 
 $B/fs.img: $B/mkfs $P
-	$< $@ $P
+	$< $@ $P user/README
 
 clean:
 	rm $P $O $B/kernel8* $B/mkfs $B/fs.img $P $H/*.o

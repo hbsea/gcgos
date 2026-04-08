@@ -1,4 +1,5 @@
 #include "param.h"
+#include "types.h"
 struct fd
 {
     enum
@@ -13,6 +14,7 @@ struct fd
     char writeable;
     struct pipe* pipe;
     struct inode* ip;
+    uint off;
 };
 
 extern struct fd fds[NFD];

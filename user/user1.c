@@ -36,7 +36,9 @@ int main()
     //     puts("open notexist failed\n");
     // }
 
-    mknode("console", T_DEV, 1, 1);
+    // mknode("console", T_DEV, 1, 1);
+    char *cat_args[] = {"cat", "README", 0};
+    exec("cat", cat_args);
 
     for (;;);
     return 0;

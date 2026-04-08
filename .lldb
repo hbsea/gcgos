@@ -18,9 +18,9 @@ settings set show-statusline false
 # b iget
 # b namei
 # b sys_exec
-# b kexec
+b kexec
 # b sys_open
 # b sys_mknod
-b mknod
+# b readi
 c
 
