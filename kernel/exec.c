@@ -43,17 +43,17 @@ int kexec(char* path, char** args)
         for (int i = file_start_index, j = 0; i <= file_end_index; j++, i++)
         {
             struct buf *data_buf, *sec_buf;
-            if (i <= 30)
+            if (i < NDIRECT)
             {
                 data_buf = bread(dp->dev, dp->addrs[i]);
                 sec_buf = data_buf;
             }
             else
             {
-                data_buf = bread(dp->dev, dp->addrs[31]);
+                data_buf = bread(dp->dev, dp->addrs[NDIRECT]);
                 uint* p = (uint*)data_buf->data;
-                if (p[i - 31] == 0) panic("invalid indirect block");
-                sec_buf = bread(dp->dev, p[i - 31]);
+                if (p[i - NDIRECT] == 0) panic("invalid indirect block");
+                sec_buf = bread(dp->dev, p[i - NDIRECT]);
             }
             char* s = (char*)sec_buf->data;
             char* d = (char*)pa;

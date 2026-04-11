@@ -115,8 +115,8 @@ void forkret(void)
         first = 0;
 
         // get_entry();
-        // kexec("user1", (char*[]){"user1", 0});
-        kexec("cat", (char*[]){"cat", "README", 0});
+        kexec("user1", (char*[]){"user1", 0});
+        // kexec("cat", (char*[]){"cat", "README", 0});
         // char* args[] = {"echo", "hello", "goodbye", 0};
         // kexec("/echo", args);  // TODO handle args
         // uint64 upsize =

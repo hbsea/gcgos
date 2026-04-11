@@ -191,6 +191,7 @@ int sys_open(void)
 
     fd_file->type = FD_FILE;
     fd_file->ip = ip;
+    fd_file->off = 0;
     fd_file->readable = 1;
     fd_file->writeable = 0;
 

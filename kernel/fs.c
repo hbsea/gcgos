@@ -8,6 +8,34 @@ struct spinlock inode_table_lock;
 
 uint rootdev = 1;
 
+static uint balloc(uint dev)
+{
+    struct buf* bp;
+    struct supperblock* sb;
+    int b, bi, size, ninodes;
+    uchar m;
+
+    bp = bread(dev, 1);
+    sb = (struct supperblock*)bp->data;
+    size = sb->size;
+    ninodes = sb->ninodes;
+    for (b = 0; b < size; b++)
+    {
+        if (b % BPB == 0)
+        {
+            brelse(bp);
+            bp = bread(dev, BBLOCK(b, ninodes));
+        }
+        bi = b % BPB;
+        m = 0x1 << (bi % 8);
+        if ((bp->data[bi / 8] & m) == 0) break;  // is blck free?
+    }
+    if (b >= size) panic("balloc: out of blocks\n");
+    bp->data[bi / 8] |= 0x1 << (bi % 8);
+    bwrite(dev, bp, BBLOCK(b, ninodes));  // mark it allocated on disk
+    return b;
+}
+
 struct inode* iget(uint dev, uint inum)
 {
     struct inode *ip, *nip = 0;
@@ -39,7 +67,7 @@ loop:
     nip->busy = 1;
     release(&inode_table_lock);
 
-    bp = bread(dev, (inum / IPB) + 2);
+    bp = bread(dev, IBLOCK(inum));
     dip = &((struct dinode*)(bp->data))[inum % IPB];
 
     nip->type = dip->type;
@@ -58,18 +86,18 @@ struct inode* ialloc(uint dev, short type)
     int inum;
     struct dinode* dip;
     struct buf* bp = bread(dev, 1);
-    struct supperblock* sb = (struct supperblock*)bp;
+    struct supperblock* sb = (struct supperblock*)bp->data;
     int ninodes = sb->ninodes;
     brelse(bp);
     for (inum = 0; inum < ninodes; inum++)
     {
-        bp = bread(dev, (inum / IPB) + 2);
+        bp = bread(dev, IBLOCK(inum));
         dip = &((struct dinode*)(bp->data))[inum % IPB];
         if (dip->type == 0) break;
         brelse(bp);
     }
     dip->type = type;
-    bwrite(dev, bp, (inum / IPB) + 2);
+    bwrite(dev, bp, IBLOCK(inum));
     brelse(bp);
     struct inode* ip = iget(dev, inum);
 
@@ -79,14 +107,14 @@ void iupdate(struct inode* ip)
 {
     struct buf* bp;
     struct dinode* dip;
-    bp = bread(ip->dev, ip->inum / IPB + 2);
+    bp = bread(ip->dev, IBLOCK(ip->inum));
     dip = &((struct dinode*)(bp->data))[ip->inum % IPB];
     dip->type = ip->type;
     dip->major = ip->major;
     dip->minor = ip->minor;
     dip->nlink = ip->nlink;
     dip->size = ip->size;
-    bwrite(ip->dev, bp, ip->inum / IPB + 2);
+    bwrite(ip->dev, bp, IBLOCK(ip->inum));
     brelse(bp);
 }
 
@@ -120,6 +148,18 @@ void iincref(struct inode* ip)
     ip->count += 1;
     release(&inode_table_lock);
 }
+uint bmap(struct inode* ip, uint bn)
+{
+    uint x;
+    if (bn < NDIRECT)
+        x = ip->addrs[bn];
+    else
+    {
+        uint* inp = (uint*)bread(ip->dev, ip->addrs[NDIRECT]);
+        x = inp[bn - NDIRECT];
+    }
+    return x;
+}
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 int readi(struct inode* ip, void* xdist, uint off, uint n)
@@ -130,7 +170,7 @@ int readi(struct inode* ip, void* xdist, uint off, uint n)
     char* dst = xdist;
     while (n > 0 && off < ip->size)
     {
-        bp = bread(ip->dev, ip->addrs[off / 512]);
+        bp = bread(ip->dev, bmap(ip, off / 512));
         n1 = min(n, ip->size - off);
         n1 = min(n1, 512 - (off % 512));
         char* s = (char*)bp->data + (off % 512);
@@ -164,7 +204,7 @@ struct inode* namei(char* path)
         }
         for (off = 0; off < dp->size; off += 512)
         {
-            bp = bread(dp->dev, dp->addrs[off / 512]);
+            bp = bread(dp->dev, bmap(dp, off / 512));
             for (ep = (struct dirent*)bp->data;
                  ep < (struct dirent*)(bp->data + 512); ep++)
             {
@@ -202,7 +242,7 @@ int mknod(char* path, short type, short major, short minor)
     ip->minor = minor;
     for (off = 0; off < dp->size; off += 512)
     {
-        bp = bread(dp->dev, dp->addrs[off / 512]);
+        bp = bread(dp->dev, bmap(dp, off / 512));
         for (ep = (struct dirent*)bp->data;
              ep < (struct dirent*)(bp->data + 512); ep++)
         {
@@ -217,7 +257,7 @@ int mknod(char* path, short type, short major, short minor)
 found:
     ep->inum = ip->inum;
     for (int i = 0; i < DIRSIZ && path[i]; i++) ep->name[i] = path[i];
-    bwrite(dp->dev, bp, dp->addrs[off / 512]);
+    bwrite(dp->dev, bp, bmap(dp, off / 512));
     brelse(bp);
     // ip is in memeroy,iupdate wirite it on disk;
     iupdate(ip);

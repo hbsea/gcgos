@@ -1,10 +1,12 @@
 #pragma once
 #include "types.h"
 
+#define BSIZE 512
 struct supperblock
 {
-    int nblocks;
-    int ninodes;
+    uint size;
+    uint nblocks;
+    uint ninodes;
 };
 
 #define NDIRECT 31
@@ -25,7 +27,15 @@ struct dinode
 #define T_FILE 2
 #define T_DEV 3
 
+// sector 0 is unused
+// sector 1 is superblock
+// inodes start at sector 2...
+// bitmap
+// data block
 #define IPB (512 / sizeof(struct dinode))
+#define IBLOCK(inum) (inum / IPB + 2)  // start of inode
+#define BPB (BSIZE * 8)
+#define BBLOCK(b, ninodes) ((b / BPB) + (ninodes / IPB) + 3)  // start of bitmap
 
 struct dirent
 {
