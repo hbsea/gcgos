@@ -2,3 +2,4 @@
 #define NCPU 4
 #define NFD 100
 #define NOFILE 16
+#define NDEV 10

@@ -2,7 +2,9 @@
 #include "param.h"
 #include "fd.h"
 #include "proc.h"
+#include "dev.h"
 
+struct devsw devsw[NDEV];
 struct fd fds[NFD];
 
 int fd_ualloc(void)
@@ -33,7 +35,9 @@ struct fd* fd_alloc(void)
 
 int fd_write(struct fd* fd, uint64 addr, int n)
 {
+    if (fd->writeable == 0) return -1;
     if (fd->type == FD_PIPE) return pipe_write(fd->pipe, addr, n);
+    if (fd->type == FD_FILE) return writei(fd->ip, (void*)addr, n);
     return -1;
 }
 int fd_read(struct fd* fd, uint64 buf, int n)

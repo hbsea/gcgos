@@ -2,6 +2,8 @@
 #include "bio.h"
 #include "fs.h"
 #include "spinlock.h"
+#include "dev.h"
+
 struct inode inode[NINODE];
 
 struct spinlock inode_table_lock;
@@ -62,6 +64,7 @@ loop:
     }
 
     if (nip == 0) panic("out of inode");
+    nip->dev = dev;
     nip->inum = inum;
     nip->count = 1;
     nip->busy = 1;
@@ -71,6 +74,8 @@ loop:
     dip = &((struct dinode*)(bp->data))[inum % IPB];
 
     nip->type = dip->type;
+    nip->major = dip->major;
+    nip->minor = dip->minor;
     nip->nlink = dip->nlink;
     nip->size = dip->size;
     for (int i = 0; i <= NDIRECT; i++) nip->addrs[i] = dip->addrs[i];
@@ -89,7 +94,7 @@ struct inode* ialloc(uint dev, short type)
     struct supperblock* sb = (struct supperblock*)bp->data;
     int ninodes = sb->ninodes;
     brelse(bp);
-    for (inum = 0; inum < ninodes; inum++)
+    for (inum = 1; inum < ninodes; inum++)
     {
         bp = bread(dev, IBLOCK(inum));
         dip = &((struct dinode*)(bp->data))[inum % IPB];
@@ -182,6 +187,18 @@ int readi(struct inode* ip, void* xdist, uint off, uint n)
     }
     return target - n;
 }
+int writei(struct inode* ip, void* addr, uint n)
+{
+    if (ip->type == T_DEV)
+    {
+        return devsw[ip->major].d_write(ip->minor, addr, n);
+    }
+    else
+    {
+        panic("writei: unkown type\n");
+        return -1;
+    }
+}
 
 struct inode* namei(char* path)
 {
@@ -240,6 +257,10 @@ int mknod(char* path, short type, short major, short minor)
     struct inode* ip = ialloc(dp->dev, type);
     ip->major = major;
     ip->minor = minor;
+    ip->size = 0;
+    ip->nlink = 0;
+    // ip is in memeroy,iupdate wirite it on disk;
+    iupdate(ip);  // write new inode to disk
     for (off = 0; off < dp->size; off += 512)
     {
         bp = bread(dp->dev, bmap(dp, off / 512));
@@ -257,11 +278,12 @@ int mknod(char* path, short type, short major, short minor)
 found:
     ep->inum = ip->inum;
     for (int i = 0; i < DIRSIZ && path[i]; i++) ep->name[i] = path[i];
-    bwrite(dp->dev, bp, bmap(dp, off / 512));
+    bwrite(dp->dev, bp, bmap(dp, off / 512));  // write directory block
     brelse(bp);
-    // ip is in memeroy,iupdate wirite it on disk;
-    iupdate(ip);
 
+    dp->size += sizeof(struct dirent);  // update directory inode
+    iupdate(dp);
     iput(dp);
+    iput(ip);
     return 0;
 }

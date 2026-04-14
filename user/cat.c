@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     for (int i = 1; i < argc; i++)
     {
-        fd = open(argv[i]);
+        fd = open(argv[i], 0);
         if (fd < 0)
         {
             puts("open file failed\n");

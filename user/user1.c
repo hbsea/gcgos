@@ -36,10 +36,20 @@ int main()
     //     puts("open notexist failed\n");
     // }
 
-    // mknode("console", T_DEV, 1, 1);
-    char *cat_args[] = {"cat", "README", 0};
-    exec("cat", cat_args);
+    mknode("console", T_DEV, 1, 1);
+    // char *cat_args[] = {"cat", "README", 0};
+    // exec("cat", cat_args);
+    int fd = open("console", 1);
+    if (fd >= 0)
+        puts("open console ok.\n");
+    else
+        puts("open console failed.\n");
 
+    if (write(fd, "hello\n", 6) != 6)
+    {
+        puts("write to console filed\n");
+    }
+    close(fd);
     for (;;);
     return 0;
 }

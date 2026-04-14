@@ -103,13 +103,13 @@ int sys_pipe(void)
 int sys_write(void)
 {
     int fd, n;
-    uint64 addr;
+    char buf[512];
     argfd(0, &fd);
     argint(2, &n);
-    argaddr(1, &addr, n);
+    argaddr(1, (uint64*)&buf, n);
     struct proc* p = myproc();
 
-    return fd_write(p->fds[fd], addr, n);
+    return fd_write(p->fds[fd], (uint64)buf, n);
 }
 int sys_read(void)
 {
@@ -178,8 +178,12 @@ int sys_exec(void)
 int sys_open(void)
 {
     char file_name[DIRSIZ];
+    int arg1;
+
     for (int x = 0; x < DIRSIZ; x++) file_name[x] = 0;
     argaddr(0, (uint64*)&file_name, 14);
+
+    argint(1, &arg1);
     struct inode* ip = namei(file_name);
     if (ip == 0) return -1;
 
@@ -192,8 +196,16 @@ int sys_open(void)
     fd_file->type = FD_FILE;
     fd_file->ip = ip;
     fd_file->off = 0;
-    fd_file->readable = 1;
-    fd_file->writeable = 0;
+    if (arg1)
+    {
+        fd_file->readable = 1;
+        fd_file->writeable = 1;
+    }
+    else
+    {
+        fd_file->readable = 1;
+        fd_file->writeable = 0;
+    }
 
     p->fds[ufd] = fd_file;
 

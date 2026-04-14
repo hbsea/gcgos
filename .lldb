@@ -23,4 +23,5 @@ b kexec
 # b sys_mknod
 # b readi
 c
+b syscall
 

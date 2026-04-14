@@ -82,7 +82,7 @@ void puts(char* s)
     cons_puts(s, i);
 }
 
-int open(char* s)
+int open(char* s, int n)
 {
     unsigned long x;
     asm volatile("mov x8,#14");

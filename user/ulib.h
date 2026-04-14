@@ -8,6 +8,6 @@ int read(int fd, char* buf, int n);
 void cons_puts(char* s, int size);
 void exec(char* path, ...);
 void puts(char* s);
-int open(char* s);
+int open(char* s, int n);
 void close(int fd);
 int mknode(char* s, short type, short major, short minor);

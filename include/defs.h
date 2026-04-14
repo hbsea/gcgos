@@ -105,6 +105,7 @@ void bwrite(uint dev, struct buf* b, uint sector);
 struct inode* iget(uint dev, uint inum);
 void iput(struct inode* ip);
 int readi(struct inode* ip, void* xdist, uint off, uint n);
+int writei(struct inode* ip, void* addr, uint n);
 struct inode* namei(char* path);
 int mknod(char* path, short type, short major, short minor);
 
