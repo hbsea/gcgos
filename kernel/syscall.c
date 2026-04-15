@@ -178,14 +178,28 @@ int sys_exec(void)
 int sys_open(void)
 {
     char file_name[DIRSIZ];
-    int arg1;
+    int arg1, rootdev = 1;
+    struct inode* dp;
 
     for (int x = 0; x < DIRSIZ; x++) file_name[x] = 0;
     argaddr(0, (uint64*)&file_name, 14);
 
     argint(1, &arg1);
     struct inode* ip = namei(file_name);
-    if (ip == 0) return -1;
+
+    if (ip == 0)
+    {
+        if (arg1 & O_CREATE)
+        {
+            dp = iget(rootdev, 1);
+            if (dp->type != T_DIR) return -1;
+            ip = mknod(dp, file_name, T_FILE, 0, 0);
+            iput(dp);
+            if (ip == 0) return -1;
+        }
+        else
+            return -1;
+    }
 
     int ufd;
     struct fd* fd_file;
@@ -196,9 +210,14 @@ int sys_open(void)
     fd_file->type = FD_FILE;
     fd_file->ip = ip;
     fd_file->off = 0;
-    if (arg1)
+    if (arg1 & O_RDWR)
     {
         fd_file->readable = 1;
+        fd_file->writeable = 1;
+    }
+    else if (arg1 & O_WRONLY)
+    {
+        fd_file->readable = 0;
         fd_file->writeable = 1;
     }
     else
@@ -223,7 +242,14 @@ int sys_mknod(void)
     int minor;
     argint(3, &minor);
 
-    mknod(dev_name, T_DEV, major, minor);
+    int rootdev = 1;
+    struct inode *dp, *nip;
+    dp = iget(rootdev, 1);
+
+    nip = mknod(dp, dev_name, T_DEV, major, minor);
+    if (nip == 0) return -1;
+    iput(dp);
+    iput(nip);
 
     return 0;
 }

@@ -3,6 +3,7 @@
 #include "fs.h"
 #include "spinlock.h"
 #include "dev.h"
+#include "param.h"
 
 struct inode inode[NINODE];
 
@@ -35,7 +36,27 @@ static uint balloc(uint dev)
     if (b >= size) panic("balloc: out of blocks\n");
     bp->data[bi / 8] |= 0x1 << (bi % 8);
     bwrite(dev, bp, BBLOCK(b, ninodes));  // mark it allocated on disk
+    brelse(bp);
     return b;
+}
+
+static void bfree(uint dev, uint b)
+{
+    struct buf* bp;
+    struct supperblock* sb;
+    int bi;
+    uchar m;
+    bp = bread(dev, 1);
+    sb = (struct supperblock*)bp->data;
+    int ninodes = sb->ninodes;
+    brelse(bp);
+
+    bp = bread(dev, BBLOCK(b, ninodes));
+    bi = b % BPB;
+    m = ~(0x1 << (bi % 8));
+    bp->data[bi / 8] &= m;
+    bwrite(dev, bp, BBLOCK(b, ninodes));  // mark it free on disk
+    brelse(bp);
 }
 
 struct inode* iget(uint dev, uint inum)
@@ -108,6 +129,7 @@ struct inode* ialloc(uint dev, short type)
 
     return ip;
 }
+
 void iupdate(struct inode* ip)
 {
     struct buf* bp;
@@ -123,6 +145,11 @@ void iupdate(struct inode* ip)
     brelse(bp);
 }
 
+static void ifree(uint dev, struct inode* ip)
+{
+    ip->type = 0;
+    iupdate(ip);
+}
 void ilock(struct inode* ip)
 {
     acquire(&inode_table_lock);
@@ -173,6 +200,14 @@ int readi(struct inode* ip, void* xdist, uint off, uint n)
     uint target = n, n1;
 
     char* dst = xdist;
+
+    if (ip->type == T_DEV)
+    {
+        if (ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].d_read)
+            return -1;
+        return devsw[ip->major].d_read(ip->minor, xdist, n);  // TODO:d_read
+    }
+
     while (n > 0 && off < ip->size)
     {
         bp = bread(ip->dev, bmap(ip, off / 512));
@@ -187,11 +222,66 @@ int readi(struct inode* ip, void* xdist, uint off, uint n)
     }
     return target - n;
 }
-int writei(struct inode* ip, void* addr, uint n)
+
+#define MIN(a, b) ((a < b) ? a : b)
+int writei(struct inode* ip, void* addr, uint off, uint n)
 {
     if (ip->type == T_DEV)
     {
+        if (ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].d_write)
+            return -1;
         return devsw[ip->major].d_write(ip->minor, addr, n);
+    }
+    else if (ip->type == T_FILE || ip->type == T_DEV)
+    {
+        struct buf* bp;
+        int r = 0, lbn, m;
+        uint b;
+        while (r < n)
+        {
+            lbn = off / BSIZE;
+            if (lbn < NDIRECT)
+            {
+                if (ip->addrs[lbn] == 0)
+                {
+                    b = balloc(ip->dev);
+                    ip->addrs[lbn] = b;
+                }
+            }
+            else
+            {
+                if ((lbn - NDIRECT) > NINDIRECT) panic("writei:MAXFILE");
+                if (ip->addrs[NDIRECT] == 0)
+                {
+                    b = balloc(ip->dev);
+                    ip->addrs[NDIRECT] = b;
+                }
+                bp = bread(ip->dev, ip->addrs[NDIRECT]);
+                uint* inp = (uint*)bp->data;
+                if (inp[lbn - NDIRECT] == 0)
+                {
+                    b = balloc(ip->dev);
+                    inp[lbn - NDIRECT] = b;
+                }
+                bwrite(ip->dev, bp, ip->addrs[NDIRECT]);
+                brelse(bp);
+            }
+
+            m = MIN(BSIZE - off % BSIZE, n - r);
+            bp = bread(ip->dev, bmap(ip, off / BSIZE));
+            char* s = addr + r;
+            char* d = (char*)(bp->data + off % BSIZE);
+            for (int i = 0; i < m; i++) *d++ = *s++;
+            bwrite(ip->dev, bp, bmap(ip, off / BSIZE));
+            brelse(bp);
+            r += m;
+            off += m;
+        }
+        if (r > 0)
+            if (off > ip->size) ip->size = off;
+        iupdate(ip);
+
+        return r;
     }
     else
     {
@@ -248,12 +338,12 @@ struct inode* namei(char* path)
     }
 }
 
-int mknod(char* path, short type, short major, short minor)
+struct inode* mknod(struct inode* dp, char* path, short type, short major,
+                    short minor)
 {
     struct dirent* ep;
     struct buf* bp;
     int off;
-    struct inode* dp = iget(rootdev, 1);
     struct inode* ip = ialloc(dp->dev, type);
     ip->major = major;
     ip->minor = minor;
@@ -283,7 +373,5 @@ found:
 
     dp->size += sizeof(struct dirent);  // update directory inode
     iupdate(dp);
-    iput(dp);
-    iput(ip);
-    return 0;
+    return ip;
 }

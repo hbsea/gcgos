@@ -72,8 +72,8 @@ dir:
 P = $H/user1 \
 	$H/user2 \
 	$H/echo \
-	$H/cat
-I = $H/ulib.o 
+	$H/cat 
+I = $H/ulib.o $H/printf.o
 uprog: $P $(I)
 # $H/%: $H/%.bin
 # 	$L -m aarch64elf -r -b binary $< -o $@

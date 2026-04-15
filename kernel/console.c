@@ -1,10 +1,13 @@
+#include "defs.h"
 #include "dev.h"
+#include "spinlock.h"
 #include "uart.h"
 
 #define CONSOLE 1
 
 #define BACKSPACE 0x100
 
+struct spinlock console_lock;
 void consputc(int c)
 {
     if (c == BACKSPACE)
@@ -22,10 +25,15 @@ void consputc(int c)
 int console_write(int minor, void *buf, int n)
 {
     char *b = buf;
+
+    acquire(&console_lock);
+
     for (int i = 0; i < n; i++)
     {
         consputc(b[i]);
     }
+
+    release(&console_lock);
     return n;
 }
 void consoleinit(void)

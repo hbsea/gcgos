@@ -37,8 +37,20 @@ int fd_write(struct fd* fd, uint64 addr, int n)
 {
     if (fd->writeable == 0) return -1;
     if (fd->type == FD_PIPE) return pipe_write(fd->pipe, addr, n);
-    if (fd->type == FD_FILE) return writei(fd->ip, (void*)addr, n);
-    return -1;
+    if (fd->type == FD_FILE)
+    {
+        int r = writei(fd->ip, (void*)addr, fd->off, n);
+        if (r > 0)
+        {
+            fd->off += r;
+        }
+        return r;
+    }
+    else
+    {
+        panic("fd_write");
+        return -1;
+    }
 }
 int fd_read(struct fd* fd, uint64 buf, int n)
 {
@@ -46,7 +58,7 @@ int fd_read(struct fd* fd, uint64 buf, int n)
     if (fd->type == FD_PIPE) return pipe_read(fd->pipe, buf, n);
     if (fd->type == FD_FILE)
     {
-        int cc = readi(fd->ip, (void*)buf, fd->off, sizeof(buf));
+        int cc = readi(fd->ip, (void*)buf, fd->off, n);
         if (cc > 0) fd->off += cc;
         return cc;
     }

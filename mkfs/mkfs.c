@@ -82,12 +82,12 @@ void balloc(int used)
     char buf[512];
     printf("balloc: first %d blocks have been allocated\n", used);
     bzero(buf, sizeof(buf));
-    for (int i; i < used; i++)
+    for (int i = 0; i < used; i++)
     {
         buf[i / 8] = buf[i / 8] | (0x1 << (i % 8));
     }
     printf("balloc: write bitmap block at sector %d\n", ninodes / IPB + 3);
-    wsect(nblocks / IPB + 3, buf);
+    wsect(ninodes / IPB + 3, buf);
 }
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -115,12 +115,12 @@ void iappend(uint inum, void* xp, int n)
         }
         else
         {
+            assert((fbn - NDIRECT) < NINDIRECT);
             if (din.addrs[NDIRECT] == 0)
             {
                 din.addrs[NDIRECT] = freeblock++;
                 usedblocks++;
             }
-            assert((fbn - NDIRECT) < NINDIRECT);
             rsect(din.addrs[NDIRECT], indirect_buf);
             uint* inp = (uint*)indirect_buf;
             if (inp[fbn - NDIRECT] == 0)
