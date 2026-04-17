@@ -1,4 +1,5 @@
 #include "proc.h"
+#include <stddef.h>
 #include "defs.h"
 #include "param.h"
 #include "memlayout.h"
@@ -115,7 +116,8 @@ void forkret(void)
         first = 0;
 
         // get_entry();
-        kexec("user1", (char*[]){"user1", 0});
+        kexec("init", (char*[]){"init", 0});
+        // kexec("user1", (char*[]){"user1", 0});
         // kexec("cat", (char*[]){"cat", "README", 0});
         // char* args[] = {"echo", "hello", "goodbye", 0};
         // kexec("/echo", args);  // TODO handle args
@@ -140,26 +142,64 @@ void forkret(void)
     // asm volatile("eret");
 }
 
-struct proc* newproc(void)
+struct proc* copyproc(struct proc* p)
 {
-    struct proc *np, *cp;
-    cp = myproc();
+    pte_t* pte;
+    uint64 pa, npa;
+    uint flags;
+    struct proc* np;
     np = allocproc();
-    np->ppid = cp->pid;
-    np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
-    np->ctx.x30 = (uint64)forkret;
+    np->ppid = p->pid;
+    np->sz = p->sz;
+
+    for (int i = 0; i < PGROUNDUP(np->sz) + PGSIZE; i += PGSIZE)
+    {
+        if ((pte = walk(p->pagetable, i, 0)) == 0) continue;
+        if ((*pte & PTE_V) == 0) continue;
+        pa = PTE2PA(*pte);
+        flags = PTE_FLAGS(*pte);
+        npa = (uint64)kalloc();
+        char* d = (char*)npa;
+        char* s = (char*)pa;
+        int j = PGSIZE;
+        while (j-- > 0) *d++ = *s++;
+
+        mappages(np->pagetable, i, npa, PGSIZE, flags);
+    }
+
+    int j = PGSIZE;
+    char* d = (char*)np->tf;
+    char* s = (char*)p->tf;
+    while (j-- > 0) *d++ = *s++;
+
+    for (int i = 0; i < NOFILE; i++)
+    {
+        np->fds[i] = p->fds[i];
+        if (np->fds[i]) fd_incref(np->fds[i]);
+    }
+
+    // np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
+    // np->ctx.x30 = (uint64)forkret;
     np->tf->x0 = 0;  // so fork() returns 0 in child
 
     // uint64 utext = (uint64)(0);
     // printf("utext:%p uproc:%p tf:%p\n", utext, 0, np->tf);
     // mappages(np->pagetable, 0x0, utext, PGSIZE, PTE_NORMAL | PTE_AP_RW);
     // np->tf->sp_el0 = PGSIZE;
+
+    j = sizeof(struct context);
+    d = (char*)&np->ctx;
+    s = (char*)&p->ctx;
+    while (j-- > 0) *d++ = *s++;
+
     np->ctx.sp = (uint64)(np->kstack + PGSIZE);
 
     printf(
-        "newproc created,pid is: %d ppid is: %d addr:%p np->ctx.x30:%p "
+        "newproc created,TRAPFRAMEAdress:%p, pid is: %d ppid is: %d addr:%p "
+        "np->ctx.x30:%p "
         "p->ctx.sp:%p\n",
-        np->pid, np->ppid, np, np->ctx.x30, np->ctx.sp);
+        np->tf, np->pid, np->ppid, np, np->ctx.x30, np->ctx.sp);
+
     return np;
 }
 

@@ -21,6 +21,7 @@ void countkmem(void);
 void kvminit(void);
 void kvminithart(void);
 void kvmmap(pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 sz, uint64 perm);
+pte_t* walk(pagetable_t pagetable, uint64 va, int alloc);
 int mappages(pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 size,
              uint64 perm);
 uint64 walkaddr(pagetable_t pagetable, uint64 va);
@@ -37,7 +38,7 @@ int cpuid(void);
 struct cpu* mycpu(void);
 struct proc* myproc(void);
 void userinit(void);
-struct proc* newproc(void);
+struct proc* copyproc(struct proc* cp);
 void yield(void);
 void sleep(void* chan);
 void wakeup(void* chan);
@@ -103,6 +104,7 @@ void bwrite(uint dev, struct buf* b, uint sector);
 
 // fs.c
 struct inode* iget(uint dev, uint inum);
+void iunlock(struct inode* ip);
 void iput(struct inode* ip);
 void iupdate(struct inode* ip);
 int readi(struct inode* ip, void* xdist, uint off, uint n);

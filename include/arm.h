@@ -176,6 +176,7 @@ typedef uint64* pagetable_t;  // 512 PTE
 // #define PTE2PA(pte) ((uint64)pte & ~0xFFF)
 #define PA2PTE(pa) (((uint64)(pa) >> 12) << 12)
 #define PTE2PA(pte) ((uint64)(pte) & 0x0000FFFFFFFFF000ULL)
+#define PTE_FLAGS(pte) ((pte) & 0x3FF)
 
 // extract the three 9-bit page table indices from a virtual address.
 #define PXMASK 0x1FF  // 9 bits

@@ -72,7 +72,9 @@ dir:
 P = $H/user1 \
 	$H/user2 \
 	$H/echo \
-	$H/cat 
+	$H/cat \
+	$H/init \
+	$H/sh
 I = $H/ulib.o $H/printf.o
 uprog: $P $(I)
 # $H/%: $H/%.bin

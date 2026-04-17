@@ -23,11 +23,19 @@ settings set show-statusline false
 # b sys_mknod
 # b readi
 # b writei
-b balloc
-c
+# b balloc
+# c
 # b syscall
 # c
-b readi
+# b readi
+# b sys_exec
+# b kexec
+# c
+# b swtch
+b copyproc
 c
+b kexec
+c
+
 
 

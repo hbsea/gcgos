@@ -10,17 +10,8 @@ int kexec(char* path, char** args)
     struct inode* dp;
     struct buf* buf;
     struct elf* user_elf;
-    struct proc* p;
 
-    if (first)
-    {
-        first = 0;
-        p = myproc();
-    }
-    else
-    {
-        p = newproc();
-    }
+    struct proc* p = myproc();
 
     dp = namei(path);
     if (!dp) panic("kexec file not found\n");
@@ -76,7 +67,7 @@ int kexec(char* path, char** args)
     int argc;
     for (argc = 0; args[argc] != 0; argc++);
 
-    uint64 ustack[argc + 1];  //+1 for NULL
+    uint64 ustack[argc];  //+1 for NULL
 
     int s;
 
@@ -106,6 +97,7 @@ int kexec(char* path, char** args)
     }
 
     mappages(p->pagetable, sz, (uint64)sp, PGSIZE, PTE_AP_RW);
+    p->sz = sz;
 
     p->tf->sp_el0 = (uint64)align_sz;
     p->tf->x0 = argc;

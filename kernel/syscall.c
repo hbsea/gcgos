@@ -60,10 +60,14 @@ void argint(int n, int* ip) { *ip = argraw(n); }
 
 int sys_fork(void)
 {
-    struct proc* p;
-    p = newproc();
+    struct proc *cp, *np;
+    cp = myproc();
+
+    np = copyproc(cp);
+    np->state = RUNNABLE;
+    // p = newproc();
     // exec(p);
-    return p->pid;
+    return np->pid;
 }
 
 int sys_exit(void)
@@ -156,14 +160,18 @@ int sys_cons_puts(void)
 
 int sys_exec(void)
 {
-    char buf[DIRSIZ];
-    for (int x = 0; x < DIRSIZ; x++) buf[x] = 0;
-    argaddr(0, (uint64*)&buf, DIRSIZ);
+    char exe_name[DIRSIZ];
+    for (int x = 0; x < DIRSIZ; x++) exe_name[x] = 0;
+    argaddr(0, (uint64*)&exe_name, DIRSIZ);
 
     char args[512];
     argaddr(1, (uint64*)&args, 512);
 #define MAXARG 32
     uint64* argv[MAXARG];
+    for (int i = 0; i < MAXARG; i++)
+    {
+        argv[i] = 0;
+    }
     uint64* arg = (uint64*)args;
 
     for (int i = 0; arg[i] != 0; i++)
@@ -172,7 +180,7 @@ int sys_exec(void)
         fetchaddr(arg[i], argv[i], PGSIZE);
     }
 
-    kexec(buf, (char**)&argv);
+    kexec(exe_name, (char**)&argv);
 
     return 0;
 }
@@ -208,6 +216,7 @@ int sys_open(void)
     ufd = fd_ualloc();
     struct proc* p = myproc();
 
+    iunlock(ip);
     fd_file->type = FD_FILE;
     fd_file->ip = ip;
     fd_file->off = 0;

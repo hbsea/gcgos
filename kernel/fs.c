@@ -70,7 +70,7 @@ struct inode* iget(uint dev, uint inum)
 loop:
     for (ip = &inode[0]; ip < &inode[NINODE]; ip++)
     {
-        if (ip->count > 0 && ip->inum == inum)
+        if (ip->count > 0 && ip->dev == dev && ip->inum == inum)
         {
             if (ip->busy)
             {
@@ -78,6 +78,7 @@ loop:
                 goto loop;
             }
             ip->count++;
+            ip->busy = 1;
             release(&inode_table_lock);
             return ip;
         }
