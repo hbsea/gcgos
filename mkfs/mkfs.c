@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
     // IPB>ninodes,supperblock=block1,inodeblock>=block2,datablock>=block3;
     // (ninodes + IPB - 1) / IPB
 
-    bitblocks = sb.size / (512 * 8) + 1;
+    bitblocks = size / (512 * 8) + 1;
     usedblocks = ninodes / IPB + 3 + bitblocks;
     freeblock = usedblocks;
 

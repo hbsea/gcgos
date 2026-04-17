@@ -12,3 +12,4 @@ int open(char* s, int n);
 void close(int fd);
 int mknode(char* s, short type, short major, short minor);
 void printf(int fd, char* fmt, ...);
+int unlink(char* path);

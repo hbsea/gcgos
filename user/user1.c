@@ -1,5 +1,6 @@
 #include "ulib.h"
 #include "../include/fs.h"
+#include "../include/fcntl.h"
 
 char buf[200];
 int main()

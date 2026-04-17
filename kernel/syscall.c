@@ -5,6 +5,7 @@
 #include "param.h"
 #include "fd.h"
 #include "memlayout.h"
+#include "fcntl.h"
 
 int argraw(int n)
 {
@@ -157,7 +158,7 @@ int sys_exec(void)
 {
     char buf[DIRSIZ];
     for (int x = 0; x < DIRSIZ; x++) buf[x] = 0;
-    argaddr(0, (uint64*)&buf, 14);
+    argaddr(0, (uint64*)&buf, DIRSIZ);
 
     char args[512];
     argaddr(1, (uint64*)&args, 512);
@@ -182,7 +183,7 @@ int sys_open(void)
     struct inode* dp;
 
     for (int x = 0; x < DIRSIZ; x++) file_name[x] = 0;
-    argaddr(0, (uint64*)&file_name, 14);
+    argaddr(0, (uint64*)&file_name, DIRSIZ);
 
     argint(1, &arg1);
     struct inode* ip = namei(file_name);
@@ -234,7 +235,7 @@ int sys_mknod(void)
 {
     char dev_name[DIRSIZ];
     for (int x = 0; x < DIRSIZ; x++) dev_name[x] = 0;
-    argaddr(0, (uint64*)&dev_name, 14);
+    argaddr(0, (uint64*)&dev_name, DIRSIZ);
     int type_dev;
     argint(1, &type_dev);
     int major;
@@ -250,6 +251,23 @@ int sys_mknod(void)
     if (nip == 0) return -1;
     iput(dp);
     iput(nip);
+
+    return 0;
+}
+
+int sys_unlink(void)
+{
+    struct inode* ip;
+    char file_name[DIRSIZ];
+    for (int x = 0; x < DIRSIZ; x++) file_name[x] = 0;
+    argaddr(0, (uint64*)&file_name, DIRSIZ);
+
+    ip = namei(file_name);
+    ip->nlink--;
+    if (ip->nlink <= 0) panic("sys_unlink: unimplement");
+
+    iupdate(ip);
+    iput(ip);
 
     return 0;
 }
@@ -302,6 +320,9 @@ void syscall(void)
             break;
         case SYS_mknod:
             ret = sys_mknod();
+            break;
+        case SYS_unlink:
+            ret = sys_unlink();
             break;
         default:
             printf("Unknown sys call %d\n", call_num);
