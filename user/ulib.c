@@ -6,6 +6,11 @@ int fork()
     asm volatile("mov %0,x0" : "=r"(x));
     return x;
 }
+void wait()
+{
+    asm volatile("mov x8,#3");
+    asm volatile("svc #0");
+}
 void xv6_exit()
 {
     asm volatile("mov x8,#2");
@@ -107,4 +112,19 @@ int unlink(char* s)
     asm volatile("svc #0");
     asm volatile("mov %0,x0" : "=r"(x));
     return x;
+}
+
+char* gets(char* buf, int max)
+{
+    int i = 0, cc;
+    char c;
+    while (i + 1 < max)
+    {
+        cc = read(0, &c, 1);
+        if (cc < 0) break;
+        if (c == '\n' || c == '\r') break;
+        buf[i++] = c;
+    }
+    buf[i] = '\0';
+    return buf;
 }

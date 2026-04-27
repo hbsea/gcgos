@@ -24,6 +24,6 @@ int main()
             xv6_exit();
         }
         puts("pid larger 0\n");
-        for (;;);
+        if (pid > 0) wait();
     }
 }

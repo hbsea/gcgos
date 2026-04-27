@@ -206,7 +206,7 @@ int readi(struct inode* ip, void* xdist, uint off, uint n)
     {
         if (ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].d_read)
             return -1;
-        return devsw[ip->major].d_read(ip->minor, xdist, n);  // TODO:d_read
+        return devsw[ip->major].d_read(ip->minor, xdist, n);
     }
 
     while (n > 0 && off < ip->size)

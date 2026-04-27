@@ -1,4 +1,5 @@
 int fork();
+void wait();
 void xv6_exit();
 void cons_putc(int c);
 void puts(char* s);
@@ -13,3 +14,4 @@ void close(int fd);
 int mknode(char* s, short type, short major, short minor);
 void printf(int fd, char* fmt, ...);
 int unlink(char* path);
+char* gets(char* buf, int max);

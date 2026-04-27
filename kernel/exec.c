@@ -1,15 +1,18 @@
+#include "types.h"
+#include "arm.h"
 #include "proc.h"
 #include "defs.h"
 #include "memlayout.h"
 #include "fs.h"
 #include "bio.h"
 #include "elf.h"
-int first = 1;
+
 int kexec(char* path, char** args)
 {
     struct inode* dp;
     struct buf* buf;
     struct elf* user_elf;
+    pagetable_t pagetable = 0, oldpagetable;
 
     struct proc* p = myproc();
 
@@ -19,6 +22,8 @@ int kexec(char* path, char** args)
 
     user_elf = (struct elf*)buf->data;
     if (user_elf->magic != ELF_MAGIC) panic("not an execute file\n");
+
+    pagetable = proc_pagetable(p);
 
     struct proghdr* ph;
     uint64 sz = 0;
@@ -57,7 +62,7 @@ int kexec(char* path, char** args)
             brelse(sec_buf);
         }
 
-        mappages(p->pagetable, ph->vaddr, (uint64)pa, PGSIZE, PTE_AP_RW);
+        mappages(pagetable, ph->vaddr, (uint64)pa, PGSIZE, PTE_AP_RW);
         sz = ph->vaddr;
     }
     sz = PGROUNDUP(sz) + PGSIZE;
@@ -96,7 +101,10 @@ int kexec(char* path, char** args)
         d_dsp[u] = ustack[u];
     }
 
-    mappages(p->pagetable, sz, (uint64)sp, PGSIZE, PTE_AP_RW);
+    mappages(pagetable, sz, (uint64)sp, PGSIZE, PTE_AP_RW);
+
+    oldpagetable = p->pagetable;
+    p->pagetable = pagetable;
     p->sz = sz;
 
     p->tf->sp_el0 = (uint64)align_sz;
@@ -107,5 +115,6 @@ int kexec(char* path, char** args)
     p->state = RUNNABLE;
 
     brelse(buf);
+    // kfree(oldpagetable);
     return 0;
 }

@@ -67,6 +67,7 @@ void mini_uart_send_text(char* s);
 int mini_uart_recev(void);
 void pl011_uart_init(void);
 void pl011_uart_send_char(char c);
+int pl011_uart_get_char(void);
 void pl011_uart_send_text(char* s);
 void pl011_uart_intr(void);
 void pl011_uart_ie(void);

@@ -55,7 +55,8 @@ void pl011_uart_intr()
         {
             break;
         }
-        consputc(c);
+        // consputc(c);
+        consoleintr(c);
     }
     pl011_regs->ICR |= (1 << 4);
 };

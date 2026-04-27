@@ -4,6 +4,7 @@
 #include "spinlock.h"
 
 // console.c
+void consoleintr(char c);
 void consoleinit(void);
 void consputc(int);
 
@@ -37,6 +38,7 @@ void procinit(void);
 int cpuid(void);
 struct cpu* mycpu(void);
 struct proc* myproc(void);
+pagetable_t proc_pagetable(struct proc* p);
 void userinit(void);
 struct proc* copyproc(struct proc* cp);
 void yield(void);

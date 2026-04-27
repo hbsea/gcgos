@@ -32,10 +32,11 @@ settings set show-statusline false
 # b kexec
 # c
 # b swtch
-b copyproc
+# b copyproc
+# c
+# b kexec
+# b syscall
+# b timerinit
+# b wakeup
+# b *0x82958
 c
-b kexec
-c
-
-
-

@@ -1,3 +1,5 @@
+#include "types.h"
+#include "arm.h"
 #include "defs.h"
 #include "trap.h"
 #include "vm.h"
@@ -53,17 +55,18 @@ void trapinithart(void)
 // EL1->EL1
 void kerneltrap(int type)
 {
+    printf("trap addr:%p\n", r_elr_el1());
     if (type == 4)
     {
         printf("kernel trap SPSR_EL1:%p \n", (void*)r_spsr_el1());
         int kec = (((r_esr_el1()) >> 26) & 0x3f);
         printf("kec: %b not handle\n", kec);
-        panic("GET KERNEL TRAP");
+        panic("GET KERNEL TRAP SYNC_INVALID_EL1h");
     }
     else if (type == 5)
     {
         int id = gicc->GICC_IAR & 0x3FF;
-        printf("IAR:%d\n", id);
+        printf("kernel IAR:%d\n", id);
         if (id == PL011_IRQ)
         {
             pl011_uart_intr();
@@ -139,7 +142,7 @@ uint64 usertrap(int type)
     else if (type == 9)
     {
         int id = gicc->GICC_IAR & 0x3FF;
-        printf("IAR:%d\n", id);
+        printf("user IAR:%d\n", id);
         if (id == PL011_IRQ)
         {
             pl011_uart_intr();

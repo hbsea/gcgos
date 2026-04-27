@@ -167,7 +167,7 @@ struct proc* copyproc(struct proc* p)
         mappages(np->pagetable, i, npa, PGSIZE, flags);
     }
 
-    int j = PGSIZE;
+    int j = sizeof(struct trapframe);
     char* d = (char*)np->tf;
     char* s = (char*)p->tf;
     while (j-- > 0) *d++ = *s++;
@@ -179,7 +179,6 @@ struct proc* copyproc(struct proc* p)
     }
 
     // np->tf->kernel_sp = (uint64)(np->kstack + PGSIZE);
-    // np->ctx.x30 = (uint64)forkret;
     np->tf->x0 = 0;  // so fork() returns 0 in child
 
     // uint64 utext = (uint64)(0);
@@ -193,6 +192,7 @@ struct proc* copyproc(struct proc* p)
     while (j-- > 0) *d++ = *s++;
 
     np->ctx.sp = (uint64)(np->kstack + PGSIZE);
+    np->ctx.x30 = (uint64)forkret;
 
     printf(
         "newproc created,TRAPFRAMEAdress:%p, pid is: %d ppid is: %d addr:%p "
@@ -209,17 +209,19 @@ void sleep(void* chan)
     p->chan = chan;
     p->state = SLEEPING;
     printf("sleeping curproc pid:%d state:%d\n", p->pid, p->state);
-    scheduler();
+    // scheduler();
+    sched();
+    p->chan = 0;
 }
 int proc_wait(void)
 {
     struct proc* p;
     struct proc* cp = myproc();
-    int any, pid;
+    int havekids, pid;
     printf("wait pid :%d ppid:%d \n", cp->pid, cp->ppid);
     while (1)
     {
-        any = 0;
+        havekids = 0;
         for (p = proc; p < &proc[NPROC]; p++)
         {
             if (p->state == ZOMBIE && p->ppid == cp->pid)
@@ -230,11 +232,12 @@ int proc_wait(void)
                 printf("%x collected %x \n", cp, p);
                 return pid;
             }
+            havekids = 1;
         }
-        if (p->state != UNUSED && p->ppid == cp->pid) any = 1;
-        if (any == 0)
+        // if (p->state != UNUSED && p->ppid == cp->pid) havekids = 1;
+        if (!havekids)
         {
-            printf("nothing to wait for\n", cp);
+            printf("nothing to wait for, cp:%x\n", &cp);
             return -1;
         }
         sleep(cp);
@@ -285,8 +288,8 @@ int proc_kill(int pid)
 void wakeup(void* chan)
 {
     struct proc* p;
-    if (p->state == SLEEPING && p->chan == chan)
-        for (p = proc; p < &proc[NPROC]; p++) p->state = RUNNABLE;
+    for (p = proc; p < &proc[NPROC]; p++)
+        if (p->state == SLEEPING && p->chan == chan) p->state = RUNNABLE;
 }
 
 void yield(void)
@@ -308,6 +311,11 @@ void scheduler()
         int found = 0;
         for (p = proc; p < &proc[NPROC]; p++)
         {
+            // if (p < proc || p >= &proc[NPROC])
+            //     panic("scheduler: p out of range");
+
+            if (p < proc) panic("scheduler: p < proc");
+            if (p >= &proc[NPROC]) panic("scheduler: p > &proc[NPROC]");
             acquire(&p->lock);
             if (p->state == RUNNABLE)
             {
